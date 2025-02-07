@@ -1,0 +1,93 @@
+---
+title: "1-23"
+author: "Andrew Wu"
+date: "2025-01-31"
+output: html_document
+---
+
+Consider tossing a fair die. Let $A = \{2,4,6\}$ and $B = \{1,2,3,4\}$. Then $\mathbb{P}(A) = 1/2, \mathbb{P}(B) = 2/3,$ and $\mathbb{P}(AB) = 1/3$. Evidently events $A$ and $B$ are independent. Simulate draws from the sample space and verify that $\hat{\mathbb{P}}(AB) = \hat{\mathbb{P}}(A) \hat{\mathbb{P}}(B)$, where $\hat{\mathbb{P}}(A)$ is the proportion of times $A$ occurred in the simulation (and similar for $\hat{\mathbb{P}}(AB)$ and $\hat{\mathbb{P}}(B)$.)
+
+Next, find two events $A$ and $B$ are not independent, and compute the same values. Compare the calculated values to their theoretical values. Report your results and interpret.
+
+```{r}
+set.seed(127)
+
+# create sets A and B
+A <- array(c(2,4,6)) 
+B <- array(c(1,2,3,4))
+
+# set total rolls, initialize success variables
+n <- 1000
+totalAs <- 0
+totalBs <- 0
+totalABs <- 0
+
+# simulate rolls from sample space
+rolls <- sample(1:6,n, replace='True')
+for (r in rolls) {
+  # check whether each roll is in A, B, or AB
+  if (r %in% A) {
+    totalAs <- totalAs + 1
+  }
+  if (r %in% B) {
+    totalBs <- totalBs + 1
+  }
+  if ((r %in% A) && (r %in% B)) {
+    totalABs <- totalABs + 1
+  }
+}
+```
+
+```{r}
+probAhat <- totalAs/n
+probBhat <- totalBs/n
+probABhat <- totalABs/n
+
+print(paste("The proportion of times A was observed is", probAhat))
+print(paste("The proportion of times B was observed is", probBhat))
+print(paste("The proportion of times AB was observed is", probABhat))
+print(paste("The product of 0.483 and 0.676 is 0.326, which is close to 0.322."))
+
+```
+
+To check for non-independent events, simply take $A = \{1,2,3\}$ and $B = \{4,5,6\}$. 
+
+```{r}
+set.seed(127)
+
+# create sets A and B
+A <- array(c(1,2,3)) 
+B <- array(c(4,5,6))
+
+# initialize success variables
+totalAs <- 0
+totalBs <- 0
+totalABs <- 0
+
+# simulate rolls from sample space
+rolls <- sample(1:6,n, replace='True')
+for (r in rolls) {
+  # check whether each roll is in A, B, or AB
+  if (r %in% A) {
+    totalAs <- totalAs + 1
+  }
+  if (r %in% B) {
+    totalBs <- totalBs + 1
+  }
+  if ((r %in% A) && (r %in% B)) {
+    totalABs <- totalABs + 1
+  }
+}
+```
+
+```{r}
+probAhat <- totalAs/n
+probBhat <- totalBs/n
+probABhat <- totalABs/n
+
+print(paste("The proportion of times A was observed is", probAhat))
+print(paste("The proportion of times B was observed is", probBhat))
+print(paste("The proportion of times AB was observed is", probABhat))
+print(paste("The product of 0.519 and 0.481 is not close to 0."))
+```
+

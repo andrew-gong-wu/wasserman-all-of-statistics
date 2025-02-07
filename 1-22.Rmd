@@ -1,0 +1,52 @@
+---
+title: "1-22"
+author: "Andrew Wu"
+date: "2025-01-30"
+output: html_document
+---
+
+Suppose we flip a coin $n$ times and let $p$ denote the probability of heads. Let $X$ be the number of heads. We call $X$ a binomial random variable. Intuition suggests $X$ will be close to $np$. We can repeat this experiment many times and average the $X$ values. Carry out a simulation and compare the average of the $X$'s to $np$. Try this for $p = .3$ and $n = 10, n = 100,$ and $n = 1000$.
+
+```{r}
+set.seed(130)
+```
+
+```{r}
+n <- 10 # number of coinflips
+p <- 0.3 # probability of heads
+m <- 1000 # number of times we repeat the experiment
+```
+
+```{r}
+Xs <- numeric(m) # create an m-dimensional vector
+for (a in 1:m) {
+  X <- sum(rbinom(n,1,p)) # generate a binomial RV
+  Xs[a] <- X # throw it into Xs
+}
+```
+
+```{r}
+mean(Xs)
+```
+Here $np = 10\cdot 0.3 = 3$ and the average of the X's is 2.975.
+
+```{r}
+n <- 100
+for (a in 1:m) {
+  X <- sum(rbinom(n,1,p)) # generate a binomial RV
+  Xs[a] <- X # throw it into Xs
+}
+mean(Xs)
+```
+
+Here $np = 30$ and the average of the X's is 30.052.
+
+```{r}
+n <- 1000
+for (a in 1:m) {
+  X <- sum(rbinom(n,1,p)) # generate a binomial RV
+  Xs[a] <- X # throw it into Xs
+}
+mean(Xs)
+```
+Here $np = 300$ and the average of the X's is 300.045.

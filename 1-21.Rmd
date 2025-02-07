@@ -1,0 +1,36 @@
+---
+title: "1-21"
+author: "Andrew Wu"
+date: "2025-01-30"
+output: html_document
+---
+
+Suppose a coin has probability $p$ of falling heads up. Take $p = 0.3$ and $n = 1000$ and simulate $n$ coin flips. Plot the proportion of heads as a function of $n$. Repeat for $p = 0.03$.
+
+```{r}
+set.seed(127)
+n <- 1000 # set number of coin flips
+p <- 0.3 # set prob of heads
+```
+
+```{r}
+coin_flips <- rbinom(n,1,p) # generate vector of 1s and 0s (Hs and Ts)
+total_heads <- cumsum(coin_flips) # generate vector of cumulative sums
+```
+
+```{r}
+totals <- 1:n # generate vector [1, 2, ... , 1000]
+plot(totals,total_heads/totals,type='l',col='blue') # want the proportion of heads, so divide by current total number of flips
+```
+```{r}
+p <- 0.03 # changing p
+coin_flips2 <- rbinom(n,1,p) # generate vector of 1s and 0s (Hs and Ts)
+total_heads2 <- cumsum(coin_flips2) # generate vector of cumulative sums
+```
+
+```{r}
+plot(totals,total_heads2/totals,type='l',col='red') # want the proportion of heads, so divide by current total number of flips
+```
+
+
+

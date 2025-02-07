@@ -1,0 +1,46 @@
+---
+title: "2-15"
+author: "Andrew Wu"
+date: "2025-02-05"
+output: html_document
+---
+
+To generate $\text{Exp}(\beta)$ random variables, we need to generate random uniforms $U$ and then find $F^{-1}(U)$, where $F$ is the CDF for $\text{Exp}(\beta)$ random variables.
+
+We have $F(x) = -e^{-x/\beta} + 1$ by Problem 2-9, so $F^{-1}(x) = -\beta\log(1-x)$.
+
+```{r}
+generateExp <- function(beta) {
+  u <- runif(1) # generate a random uniform
+  x <- -beta*log(1-u)
+  return(x)
+}
+```
+
+We can test this out.
+
+```{r}
+set.seed(127)
+
+# get a vector to store generated RVs
+N <- 1000
+RVs <- numeric(N)
+
+# generate N samples from Exp(1)
+for (i in 1:N) {
+  RVs[i] <- generateExp(1)
+}
+
+hist(RVs,breaks=20)
+```
+
+Now we can check against R's built-in rexp function.
+
+```{r}
+set.seed(127)
+
+expRVs <- rexp(N,rate=1)
+hist(expRVs,breaks=20)
+```
+
+

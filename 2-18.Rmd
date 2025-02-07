@@ -1,0 +1,41 @@
+---
+title: "2-18"
+author: "Andrew Wu"
+date: "2025-02-06"
+output: html_document
+---
+
+Let $X \sim N(3,16)$. 
+
+(a) Find $\mathbb{P}(X < 7)$.
+(b) Find $\mathbb{P}(X > -2)$.
+(c) Find $x$ such that $\mathbb{P}(X > x) = 0.05$.
+(d) Find $\mathbb{P}(0\le X < 4).$
+(e) Find $x$ such that $\mathbb{P}(|X| > x) = 0.05.$
+
+```{r}
+pnorm(7,mean=3,sd=4) # probability that a normal rv with mean 3, SD 4 is less than 7
+1 - pnorm(-2,mean=3,sd=4) # 1 - (probability that the RV is less than -2
+qnorm(0.95,mean=3,sd=4) # probability that the RV is less than this is 0.95, so probability greater is 0.05
+pnorm(4,mean=3,sd=4) - pnorm(0,mean=3,sd=4) # probability that the RV is less than 4 minus probability that the RV is less than 0
+```
+
+For the last part, we want $\mathbb{P}(-x < X < x) = 0.95$, or equivalently, $\Phi(\frac{x-3}{4}) - \Phi(\frac{-x-3}{4}) - 0.95 = 0$.
+
+```{r}
+f <- function(c) { # define a function based on the equation above
+  return(pnorm((c-3)/4) - pnorm((-c-3)/4) - 0.95)
+}
+```
+
+```{r}
+x <- uniroot(f,lower=5,upper=20) # obtains the value between lower and upper for which the function f comes out to 0
+x$root
+```
+We can check whether this actually works.
+
+```{r}
+pnorm(x$root,mean=3,sd=4) - pnorm(-x$root,mean=3,sd=4) # probability that X lies within x$root and -x$root.
+```
+
+

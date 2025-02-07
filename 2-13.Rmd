@@ -1,0 +1,48 @@
+---
+title: "2-13"
+author: "Andrew Wu"
+date: "2025-01-31"
+output: html_document
+---
+
+Let $X \sim N(0,1)$ and let $Y = e^X$. 
+
+(a) Find the PDF for $Y$ and plot it.
+
+(b) Generate a vector $x = (x_1,\ldots , x_{10000})$ consisting of $10000$ random standard normals. Let $y = (y_1, \ldots , y_{10000})$ where $y_i = e^{x_i}$. Draw a histogram of $y$ and compare it to the PDF from part (a).
+
+For part (a), we have $f_Y(y) = f_X(s(y)) \left| \frac{ds(y)}{dy} \right|$, where $s = r^{-1}$, and $r(x) = e^x$. Thus $f_Y(y) = \frac{1}{y\sqrt{2\pi}} e^{-\frac{1}{2} \ln (y)^2}$, where $y > 0$.
+
+```{r}
+f_Y <- function(y) { 
+  ifelse(y<=0, 0, (1/(y*sqrt(2*pi))) * exp((-1/2) * log(y)^2)) 
+}
+
+curve(f_Y,from = 0, to = 10) # plot the PDF
+curve(dlnorm(x, meanlog = 0, sdlog = 1), from = 0, to = 10) # check work against lognormal distribution
+```
+
+(b) The histogram looks a lot like the plots from part (a).
+
+```{r}
+set.seed(127)
+
+x <- rnorm(10000,0,1)
+y <- exp(x)
+hist(y, breaks=60, xlim=c(0,15))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
