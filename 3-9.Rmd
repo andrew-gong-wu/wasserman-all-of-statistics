@@ -1,0 +1,35 @@
+---
+title: "3-9"
+author: "Andrew Wu"
+date: "2025-02-12"
+output: html_document
+---
+
+Let $X_1, \ldots , X_n$ be $N(0,1)$ random variables and let $\overline{X}_n = \frac{1}{n} \cdot \sum_{i=1}^n X_i$. Plot $\overline{X}_n$ versus $n$ for $n = 1, \ldots , 10000$. Repeat for $X_1, \ldots , X_n \sim \text{Cauchy}$. Explain why there is such a difference.
+
+```{r}
+set.seed(127)
+N <- 10000
+normalRVs <- rnorm(N) # generate 10000 random normals
+normalmeans <- cumsum(normalRVs)/c(1:N) # generate vector of means 
+```
+
+```{r}
+plot(c(1:N),normalmeans,ylim=c(-1,1), type="l",las=1) 
+# setting ylim for symmetry, setting las=1 to make the labels on the y-axis horizontal
+```
+
+```{r}
+set.seed(113)
+cauchyRVs <- rcauchy(N) # generate 10000 random Cauchy variables
+cauchymeans <- cumsum(cauchyRVs)/c(1:N) # generate vector of means
+```
+
+```{r}
+plot(c(1:N),cauchymeans,type="l",las=1)
+```
+
+The Cauchy distribution looks different because it is pathological. The expected value does not exist, so there is no convergence to a mean.
+
+
+

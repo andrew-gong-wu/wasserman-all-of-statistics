@@ -1,0 +1,97 @@
+---
+title: "3-19"
+author: "Andrew Wu"
+date: "2025-02-17"
+output: html_document
+---
+
+Let $X_1, \ldots , X_n$ be IID with mean $\mu$ and variance $\sigma^2$. Let $\overline{X}_n = n^{-1} \sum_{i=1}^n X_i$. Then $\overline{X}_n$ is a **statistic**, that is, a function of the data. Since $\overline{X}_n$ is a random variable, it has a distribution. This distribution is called the *sampling distribution of the statistic*.
+
+Recall that $\mathbb{E}(\overline{X}_n) = \mu$ and $\mathbb{V}(\overline{X}_n) = \sigma^2 / n$. Don't confuse the distribution of the data $f_X$ and $f_{\overline{X}_n}$. To make this clear, let $X_1, \ldots , X_n \sim \text{Uniform}(0,1)$. Let $f_X$ be the density of the $\text{Uniform}(0,1)$. Plot $f_X$.
+
+Now let $\overline{X}_n = n^{-1} \sum_{i=1}^n X_i$. Find $\mathbb{E}(\overline{X}_n)$ and $\mathbb{V}(\overline{X}_n)$. Plot them as a function of $n$. Interpret.
+
+Now simulate the distribution of $\overline{X}_n$ for $n = 1, 5, 25, 100$. Check that the simulated values of $\mathbb{E}(\overline{X}_n)$ and $\mathbb{V}(\overline{X}_n)$ agree with your theoretical calculations.
+
+What do you notice about the sampling distribution of $\overline{X}_n$ as $n$ increases?
+
+First, we plot $f_X$.
+
+```{r}
+curve(dunif(x, min = 0, max = 1), from = 0, to = 1) # plot of f_X
+```
+
+To find $\mathbb{E}(\overline{X}_n)$, we can use linearity of expectation. Note that $\mathbb{E}(X_i) = \frac{1}{2}$ for any $i$, so $\mathbb{E}(\overline{X}_n) = \frac{1}{n} \cdot \frac{1}{2} \cdot n = \frac{1}{2}$.
+
+To find $\mathbb{V}(\overline{X}_n)$, note that $\mathbb{V}(\overline{X}_n) = \frac{1}{n^2}\mathbb{V}(X_1 + \ldots + X_n) = \frac{1}{n^2}\sum_{i=1}^n \mathbb{V}(X_i).$ But $\mathbb{V}(X_i) = \frac{1}{12}$, so our answer is $\mathbb{V}(\overline{X}_n) = \frac{1}{n^2} \cdot n \cdot \frac{1}{12} = \frac{1}{12n}.$
+
+Now we will plot these as a function of $n$.
+
+```{r}
+curve(1/2 + x*0, from = 0.1, to = 100, xlab="n", ylab = "Expected value of mean of X_i's")
+curve(1/(12*x),from = 0.1, to = 100, xlab="n", ylab = "Variance of mean of X_i's")
+```
+
+As $n$ increases, the variance drops sharply, and the expected value remains constant.
+
+```{r}
+# define a function so that we can easily run for n = 1, 5, 25, 100
+# this function generates an average of n RVs from Uniform(0,1)
+generateXnbar <- function(n) {
+  Xis <- runif(n,0,1)
+  avgXn <- mean(Xis)
+  return(avgXn)
+}
+
+# define a function that generates mean and variance of a vector, and prints them out
+generateMeanAndVariance <- function(vct) {
+  print(paste("The mean is", mean(vct)))
+  print(paste("The variance is", var(vct)))
+}
+```
+
+```{r}
+N <- 10000
+```
+
+```{r}
+n <- 1
+means <- c()
+for (i in 1:N) {
+  means <- c(means, generateXnbar(n))
+}
+generateMeanAndVariance(means)
+
+```
+
+```{r}
+n <- 5
+means <- c()
+for (i in 1:N) {
+  means <- c(means, generateXnbar(n))
+}
+generateMeanAndVariance(means)
+
+```
+
+```{r}
+n <- 25
+means <- c()
+for (i in 1:N) {
+  means <- c(means, generateXnbar(n))
+}
+generateMeanAndVariance(means)
+
+```
+
+```{r}
+n <- 100
+means <- c()
+for (i in 1:N) {
+  means <- c(means, generateXnbar(n))
+}
+generateMeanAndVariance(means)
+
+```
+
+Theoretically, we expect the mean to be $0.5$ and the variance to be $\frac{1}{12n}$. These numbers line up with our expectations. As $n$ increases, the variance of $\overline{X}_n$ decreases and the expected value remains the same.

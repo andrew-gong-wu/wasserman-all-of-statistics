@@ -1,0 +1,33 @@
+---
+title: "3-11"
+author: "Andrew Wu"
+date: "2025-02-17"
+output: html_document
+---
+
+Let $Y_1,Y_2,\ldots$ be independent random variables such that $\mathbb{P}(Y_i = 1) = \mathbb{P}(Y_i = -1) = \frac{1}{2}$. Let $X_n = \sum_{i=1}^n Y_i$. Think of $Y_i = 1$ as "the stock price increased by one dollar," $Y_i = -1$ as "the stock price decreased by one dollar," and $X_n$ as the value of the stock on day $n$.
+
+(a) Find $\mathbb{E}(X_n)$ and $\mathbb{V}(X_n)$.
+(b) Simulate $X_n$ and plot $X_n$ versus $n$ for $n = 1, 2, \ldots , 10000$. Repeat the whole simulation four times. Notice two things. First, it's easy to "see" patterns in the sequence even though it is random. Second, you will find that the four runs look very different even though they were generated the same way. How do the calculations in (a) explain the second observation?
+
+For part (a), note that we actually solved a more general version of this problem in problem 4 of this chapter. In particular, we found that when $\mathbb{P}(Y_i = -1) = p$ and $\mathbb{P}(Y_i = 1) = 1 - p$, then $\mathbb{E}(X_n) = n(1-2p)$ and $\mathbb{V}(X_n) = n(4p - 4p^2).$ Therefore, taking $p = \frac{1}{2}$ yields $\mathbb{E}(X_n) = 0$ and $\mathbb{V}(X_n) = n$.
+
+For part (b), the four runs look very different because the variance $\mathbb{V}(X_n)$ is pretty high. 
+
+```{r}
+set.seed(127)
+
+# flip 10000 times
+N <- 10000
+
+for (trial in 1:4) { # run four trials
+  dayResult <- rbinom(10000,1,0.5) # generate 10000 Bernoulli RVs, the 1s will represent increase days for stock price
+  dayResult[dayResult == 0] <- -1 # replace the 0s with -1s, which represent decrease days for stock price
+  stockPrice = cumsum(dayResult) # actual price of the stock is the cumulative sum
+  
+  plot(1:N,stockPrice,type="l")
+}
+```
+
+
+
