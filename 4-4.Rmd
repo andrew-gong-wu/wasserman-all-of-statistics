@@ -1,0 +1,102 @@
+---
+title: "4-4"
+author: "Andrew Wu"
+date: "2025-02-21"
+output: html_document
+---
+
+Let $X_1, \ldots , X_n \sim \text{Bernoulli}(p)$. Let $\alpha$ be fixed and define $\epsilon\_n = \sqrt{\frac{1}{2n} \log \left( \frac{2}{\alpha} \right)}$.
+
+Let $\widehat{p}_n = n^{-1} \sum_{i=1}^n X_i$. Define $C_n = (\widehat{p}_n - \epsilon_n, \widehat{p}_n + \epsilon_n)$. We proved earlier with Hoeffding's inequality (in part (a)) that $\mathbb{P} (C_n \text{ contains } p) \ge 1 - \alpha$.
+
+(b) Let's examine the properties of this confidence interval. Let $\alpha = 0.05$ and $p = 0.4$. Conduct a simulation study to see how often the interval contains $p$ (called the coverage.) Do this for various values of $n$ between $1$ and $10000$. Plot the coverage versus $n$.
+
+(c) Plot the length of the interval versus $n$. Suppose we want the length of the interval to be no more than $.05$. How large should $n$ be?
+
+```{r}
+alpha = 0.05
+p = 0.4
+```
+
+```{r}
+# define a function that simulates runs confidence intervals based on n, alpha, p
+simulate_CI <- function(n, alpha, p, runs) {
+  
+  # track how many times the CI contains the real p
+  contains <- 0
+  
+  # compute eps_n before simulating; it depends only on n and alpha
+  eps_n <- sqrt((1/(2*n)) * log(2/alpha))
+  
+  for (i in 1:runs) {
+    
+    # phat_n depends on the bernoulli variables we simulate
+    phat_n <- mean(rbinom(n,1,p))
+
+    # after generating phat_n, we can now compute the CIs
+    CI <- c(phat_n - eps_n, phat_n + eps_n)
+    
+    # if p lies in the CI, increment contains
+    if (p <= CI[2] && p >= CI[1]) {
+      contains <- contains + 1
+    }
+  }
+  return(contains/runs)
+}
+```
+
+```{r}
+# we'll do this for a few values of n
+set.seed(126)
+
+# the following lines print the proportion of generated CIs that p lies in
+simulate_CI(10,alpha,p,1000)
+simulate_CI(50,alpha,p,1000)
+simulate_CI(250,alpha,p,1000)
+simulate_CI(1000,alpha,p,1000)
+simulate_CI(5000,alpha,p,1000)
+simulate_CI(10000,alpha,p,1000)
+```
+
+Overall, the bound seems fairly conservative. The generated proportions are well greater than $1- \alpha = 0.95.$
+
+```{r}
+set.seed(126)
+# to make sure the simulation doesn't take forever
+# we'll just plot x = 1-9, 10-90, 100-900, 1000-9000
+x_values <- c()
+for (i in 0:3) {
+  for (j in 1:9) {
+    x_values <- c(x_values, j*10^i)
+  }
+}
+x_values <- c(x_values, 10000)
+
+# then create the y_values by applying the function with our established values of alpha and p
+# runs is set to 1000; seems large enough
+y_values <- sapply(x_values, function(x) simulate_CI(x,alpha,p,1000))
+```
+
+Here is a plot of the coverages versus $n$.
+
+```{r}
+plot(x_values,y_values, xlab="Value of n", ylab="Coverage", type="l")
+```
+
+Now, for part (c), we need to create a plot of interval length versus $n$. This depends only on $n$ and $\alpha$.
+
+```{r}
+simulate_interval_length <- function(n, alpha) {
+  eps_n <- sqrt((1/(2*n)) * log(2/alpha))
+  return(2*eps_n)
+}
+```
+
+```{r}
+x_values <- c(100:10000)
+y_values <- sapply(x_values, function(x) simulate_interval_length(x, alpha))
+```
+
+```{r}
+plot(x_values,y_values, xlab="Value of n", ylab="Length of confidence interval", type="l")
+```

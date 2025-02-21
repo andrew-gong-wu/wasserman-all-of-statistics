@@ -1,0 +1,44 @@
+---
+title: "4-6"
+author: "Andrew Wu"
+date: "2025-02-21"
+output: html_document
+---
+
+Let $Z \sim N(0,1)$. Plot $\mathbb{P}(|Z| > t)$ as a function of $t$. From Markov's inequality, we have the bound $\mathbb{P}(|Z| > t) \le \frac{\mathbb{E}(|Z|^k)}{t^k}$ for any $k > 0$. Plot these bounds for $k = 1, 2, 3, 4, 5$ and compare them to the true value of $\mathbb{P}(|Z| > t).$ Also, plot the bound from Mill's inequality.
+
+Note that from previous work, we know that $\mathbb{P}(|Z| > t) = 2 \Phi(-t).$ We can use pnorm for the CDF of the normal distribution.
+
+```{r}
+x_values <- seq(0.1,5,by=0.1)
+true_y_values <- sapply(x_values, function(x) 2*pnorm(-x))
+```
+
+```{r}
+plot(x_values,true_y_values,xlab="t",ylab=expression("P(|Z| > t)"), type="l")
+```
+
+Now we'll plot the bounds from Markov's inequality.
+
+```{r}
+# the first five moments of |Z|
+moments <- c(sqrt(2/pi), 1, 2*sqrt(2/pi), 3, 8*sqrt(2/pi))
+
+# create the y-values by dividing moments by t^k
+for (i in 1:5) {
+  y_values <- sapply(x_values, function(x) moments[i]/(x^i))
+  plot(x_values,y_values,xlab="t",ylab="Markov bound",type="l",ylim=c(0,10), col="blue")
+  lines(x_values,true_y_values,col="red")
+  legend("topright", legend=c("True Value","Markov bound"), col=c("red","blue"),lwd = 2, lty = 1)
+}
+```
+
+Finally, we'll plot the bound from Mill's inequality.
+
+```{r}
+y_values <- sapply(x_values, function(x) sqrt(2/pi)*exp(-0.5*x^2)/x)
+plot(x_values,y_values,xlab="t",ylab="Mill bound", type="l",ylim=c(0,5),col="blue")
+lines(x_values,true_y_values, col="red")
+legend("topright",legend=c("True Value","Mill bound"), col=c("red","blue"),lwd=2,lty=1)
+```
+
