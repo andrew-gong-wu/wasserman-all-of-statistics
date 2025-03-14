@@ -1,0 +1,57 @@
+---
+title: "7-10"
+author: "Andrew Wu"
+date: "2025-03-14"
+output: html_document
+---
+
+In 1975, an experiment was conducted to see if cloud seeding produced rainfall. 26 clouds were seeded with silver nitrate and 26 were not. The decision to seed or not was made at random. Get the data from the website. Let $\theta$ be the difference in the mean precipitation from the two groups. Estimate $\theta$. Estimate the standard error of the estimate and produce a $95$ percent confidence interval.
+
+```{r}
+url <- "https://lib.stat.cmu.edu/DASL/Datafiles/Clouds.html"
+destfile <- "clouds.dat"
+download.file(url,destfile)
+```
+
+```{r}
+raw_data <- readLines("clouds.dat")
+raw_data
+```
+
+Evidently we must clean the data to do anything here.
+
+```{r}
+raw_data <- raw_data[-c(1:25,53:55)] # remove bad format start lines
+writeLines(raw_data,"cleaned_clouds.dat") # create a new cleaned_clouds.dat file to read.table from
+cloudData <- read.table("cleaned_clouds.dat", header = TRUE, sep = "\t") # note that \t separates the columns
+head(cloudData)
+```
+
+A good estimate $\widehat{\theta}$ is just to take the difference in means of the observations.
+
+```{r}
+unseeded <- cloudData$Unseeded_Clouds
+seeded <- cloudData$Seeded_Clouds
+us_mean <- mean(unseeded)
+s_mean <- mean(seeded)
+theta_hat <- s_mean - us_mean
+theta_hat
+```
+
+Let $\overline{X}_n$ and $\overline{Y}_n$ be the means of the unseeded and seeded data respectively. Note that $\text{se} = \sqrt{\mathbb{V}(\widehat{\theta})} = \sqrt{\mathbb{V}(\overline{X}_n - \overline{Y}_n)} = \sqrt{\mathbb{V}(\overline{X}_n) + \mathbb{V}(\overline{Y}_n)} = \sqrt{\frac{1}{n} (\mathbb{V}(X_i) + \mathbb{V}(Y_i))}.$ Estimates for $\mathbb{V}(X_i),\mathbb{V}(Y_i)$ are given by the sample variances.
+
+```{r}
+n <- length(unseeded) 
+us_var <- var(unseeded)
+s_var <- var(seeded)
+se_hat <- sqrt((us_var + s_var)/n)
+se_hat
+```
+
+Now we just need to generate a $95$ percent confidence interval.
+
+```{r}
+z <- qnorm(0.975)
+CI <- c(theta_hat - se_hat*z, theta_hat + se_hat*z)
+CI
+```

@@ -1,0 +1,55 @@
+<TITLE>Clouds Datafile</TITLE>
+
+
+<hr size=2><center><table border=1 cellpadding=0 cellspacing=0><tr><td align=center><table border=1 cellpadding=1 cellspacing=0><tr><td><A HREF="../DataArchive.html"><IMG SRC="../InlineImages/mainmenu.gif" alt="Go to Main Menu"></a></td></tr></table></td><td align=center><table border=1 cellpadding=1 cellspacing=0><tr><td><A HREF="/cgi-bin/dasl.cgi"><IMG SRC="../InlineImages/powersearchsmall.gif" alt="Go to Power Search"></a></td></tr></table></td><td align=center><table border=1 cellpadding=1 cellspacing=0><tr><td><A HREF="../allsubjects.html"><IMG SRC="../InlineImages/allsubjects.gif" alt="Go to Datafile Subjects"></a></td></tr></table></td></tr></table></center><hr size=2>
+<B><DT>Datafile Name:</B>   Clouds
+<B><DT>Datafile Subjects:</B>   <dsubjects>
+<A HREF="/cgi-bin/dasl.cgi?query=Environment&submit=Search&metaname=dsubjects&sort=swishrank">Environment</A>
+
+</dsubjects>
+<B><DT>Story Names:</B>   
+<A HREF="../Stories/CloudSeeding.html">Cloud Seeding</A>
+
+<B><DT>Reference:</B>   Chambers, Cleveland, Kleiner, and Tukey.  (1983). <I>Graphical Methods for Data Analysis. </I> Wadsworth International Group, Belmont, CA, 351.  Original Source: Simpson, Alsen, and Eden. (1975). A Bayesian analysis of a multiplicative treatment effect in weather modification. <I>Technometrics 17</I>, 161-166.
+<B><DT>Authorization:</B>   contact authors
+<B><DT>Description:</B>   Rainfall from Cloud-Seeding.  The rainfall in acre-feet from 52 clouds 26 of which were chosen at random and seeded with silver nitrate.<P>
+
+
+<B><DT>Number of cases:</B>   26
+<B><DT>Variable Names:</B>
+<OL>
+<LI>Unseeded_Clouds:   Amount of rainfall from unseeded clouds (in acre-feet)
+<LI>Seeded_Clouds:   Amount of rainfall from seeded clouds with silver nitrate (in acre-feet)
+</OL>
+<B><DT>The Data:</B>
+<PRE>
+Unseeded_Clouds	Seeded_Clouds
+1202.6	2745.6
+830.1	1697.8
+372.4	1656.0
+345.5	978.0
+321.2	703.4
+244.3	489.1
+163.0	430.0
+147.8	334.1
+95.0	302.8
+87.0	274.7
+81.2	274.7
+68.5	255.0
+47.3	242.5
+41.1	200.7
+36.6	198.6
+29.0	129.6
+28.6	119.0
+26.3	118.3
+26.1	115.3
+24.4	92.4
+21.7	40.6
+17.3	32.7
+11.5	31.4
+4.9	17.5
+4.9	7.7
+1.0	4.1
+
+
+</PRE>

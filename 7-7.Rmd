@@ -1,0 +1,91 @@
+---
+title: "7-7"
+author: "Andrew Wu"
+date: "2025-03-11"
+output: html_document
+---
+
+Data on the magnitudes of earthquakes near Fiji are available on the website for this book. Estimate the CDF $F(x)$. Compute and plot a $95$ percent confidence envelope for $F$. Find an approximate $95$ percent confidence interval for $F(4.9) - F(4.3)$.
+
+```{r}
+url <- "https://stat.cmu.edu/~larry/all-of-statistics/=data/fijiquakes.dat"
+destfile <- "fijiquakes.dat"
+download.file(url,destfile)
+```
+```{r}
+readLines(destfile,n=10) # check for format
+```
+
+```{r}
+quakesData <- read.table("fijiquakes.dat", header = TRUE)[,-1] 
+# data is space-separated & column names in first row
+# [,-1] removes the first column, which is just an index column
+head(quakesData)
+```
+We care about magnitudes of earthquakes, so we want only the mag column. Now we estimate the CDF F with the empirical distribution function.
+
+```{r}
+magnitudes <- sort(quakesData$mag)
+n <- length(magnitudes) # obtain n for the empirical distribution function
+F_nhat <- function(x) {
+  numberOfSmallerQuakes <- findInterval(x,magnitudes) # findInterval obtains the number of quakes with magnitudes less than or equal to x
+  return(numberOfSmallerQuakes/n) # returns the proportion
+}
+```
+
+Here is a plot of the empirical distribution function.
+
+```{r}
+curve(F_nhat, from=3.5, to=6.5, xlab = "Quake Magnitude",main="Empirical Distribution Function")
+```
+
+To plot a 95% confidence envelope, we use the confidence band that comes from the DKW inequality.
+
+```{r}
+alpha = 0.05
+eps_n <- sqrt(log(2/alpha)/(2*n))
+```
+
+```{r}
+lower <- function(x) {
+  return(pmax(F_nhat(x)-eps_n,0)) # we need pmax instead of just max for vectorization purposes
+}
+upper <- function(x) {
+  return(pmin(F_nhat(x)+eps_n,1))
+}
+```
+
+Now we will plot F_nhat and the lower and upper bounds.
+
+```{r}
+curve(F_nhat, from=3.5, to=6.5, xlab = "Quake Magnitude",main="95% Confidence Envelope for F")
+curve(upper, add=TRUE, from=3.5, to=6.5, col="green")
+curve(lower, add=TRUE, from=3.5, to=6.5, col="red")
+legend("bottomright",legend=c("F_nhat","upper","lower"), col=c("black","green","red"),lwd=2)
+```
+Finally, in the previous problem we computed a $1- \alpha$ confidence interval for $\theta = F(b) - F(a)$. We will use that here.
+
+```{r}
+# just so the function doesn't have to keep being reran every time we want to reference these values
+F_nhat_b <- F_nhat(4.9)
+F_nhat_a <- F_nhat(4.3)
+
+# compute the estimated standard error
+se_hat <- sqrt((F_nhat_b - F_nhat_a) * (1 - F_nhat_b + F_nhat_a) / n)
+
+# just so we don't have to repeat the qnorm computation
+z <- qnorm(1 - alpha/2)
+```
+
+```{r}
+conf_interval <- c(F_nhat_b - F_nhat_a - z*se_hat, F_nhat_b - F_nhat_a + z*se_hat)
+conf_interval
+```
+
+
+
+
+
+
+
+

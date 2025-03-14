@@ -1,0 +1,101 @@
+---
+title: "7-3"
+author: "Andrew Wu"
+date: "2025-03-10"
+output: html_document
+---
+
+Generate $100$ observations from an $N(0,1)$ distribution. Compute a $95$ percent confidence band for the CDF $F$. Repeat this $1000$ times and see how often the confidence band contains the true distribution function. Repeat using data from a Cauchy distribution.
+
+We know from the textbook that a $1-\alpha$ Confidence Band for a CDF $F$ can be found by taking $L(x) = \max \{ \widehat{F}_n(x) - \epsilon_n, 0\}$, $U(x) = \min\{ \widehat{F}_n(x) + \epsilon_n, 1 \}$, with $\epsilon_n = \sqrt{\frac{1}{2n} \log (2/\alpha)}$. Then $\mathbb{P}(L(x) \le F(x) \le U(x) \text{ for all } x) \ge 1 - \alpha$.
+
+```{r}
+n <- 100 # need 100 observations
+repeats <- 1000 # repeating 1000 times
+alpha <- 0.05 # need the probability to be >= 95%, so need 1-alpha >= 0.95
+eps_n <- sqrt(log(2/alpha)/(2*n)) # set epsilon_n as described previously
+```
+
+We want to check whether the CDF for $N(0,1)$, which we will from now on denote by $F$, lies between $L(x)$ and $U(x)$. We can do this for by checking whether $L(x) \le F(x) \le U(x)$ for all $100$ generated values of $x$; we repeat this procedure $1000$ times and see how many times it is true that $L(x) \le F(x) \le U(x)$ for all $100$ generated values.
+
+```{r}
+set.seed(127)
+
+total_successes <- 0
+F_nhat <- seq(1/100, 1, by = 1/100) # the estimated CDF for the generated values is just 1/100, 2/100, ... , 1 at those values
+
+for (i in 1:repeats) {
+  
+  # set up the observations & confidence band
+  
+  generated_random_normals <- sort(rnorm(100)) # generate & sort 100 observations from N(0,1)
+  F_values <- pnorm(generated_random_normals) # true N(0,1) CDF corresponding to generated values
+  
+  
+  L_values <- pmax(F_nhat - eps_n,rep(0,n)) # pmax is vectorized & allows us to compare the generated - eps_n to a vector of 0s
+  U_values <- pmin(F_nhat + eps_n,rep(1,n))
+  
+  
+  # test whether confidence band contains the actual CDF
+  
+  success <- TRUE
+  
+  for (j in 1:n) {
+    # check whether, for all the 
+    if (F_values[j] < L_values[j] || F_values[j] > U_values[j]) {
+      success <- FALSE
+      break
+    }
+  }
+  
+  if (success) {
+    total_successes <- total_successes + 1
+  }
+}
+
+total_successes
+
+```
+So we find that in $969$ of the simulations, the true distribution lies within the $95\%$ confidence band. This makes sense; the DKW inequality states $\mathbb{P}(L(x) \le F(x) \le U(x) \text{ for all } x) \ge 1-\alpha$, so it's not unreasonable for us to be doing somewhat better than $1-\alpha$.
+
+Now we just need to do the same thing for the Cauchy distribution.
+
+```{r}
+set.seed(127)
+
+total_successes <- 0
+
+for (i in 1:repeats) {
+  
+  # set up the observations & confidence band
+  
+  generated_random_cauchys <- sort(rcauchy(100)) # generate & sort 100 cauchy observations
+  F_values <- pcauchy(generated_random_cauchys) # true cauchy CDF corresponding to generated values
+  F_nhat <- seq(1/100, 1, by = 1/100) # the estimated CDF for the generated values is just 1/100, 2/100, ... , 1
+  
+  L_values <- pmax(F_nhat - eps_n,rep(0,n)) # pmax is vectorized & allows us to compare the generated - eps_n to a vector of 0s
+  U_values <- pmin(F_nhat + eps_n,rep(1,n))
+  
+  
+  # test whether confidence band contains the actual CDF
+  
+  success <- TRUE
+  
+  for (j in 1:n) {
+    # check whether, for all the 
+    if (F_values[j] < L_values[j] || F_values[j] > U_values[j]) {
+      success <- FALSE
+      break
+    }
+  }
+  
+  if (success) {
+    total_successes <- total_successes + 1
+  }
+}
+
+total_successes
+```
+
+
+

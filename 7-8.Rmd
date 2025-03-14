@@ -1,0 +1,59 @@
+---
+title: "7-8"
+author: "Andrew Wu"
+date: "2025-03-12"
+output: html_document
+---
+
+Get the data on eruption times and waiting times between eruptions of the Old Faithful geyser from the website. Estimate the mean waiting time and give a standard error for the estimate. Also, give a $90$ percent confidence interval for the mean waiting time. Now estimate the median waiting time.
+
+```{r}
+url <- "https://stat.cmu.edu/~larry/all-of-statistics/=data/faithful.dat"
+destfile <- "faithful.dat"
+download.file(url,destfile)
+```
+
+```{r}
+readLines(destfile,n=40) # checking for format
+```
+
+```{r}
+faithfulData <- read.table("faithful.dat", header = TRUE, skip = 25) # skip = 25 helps us skip until the actual data
+head(faithfulData)
+```
+
+A good estimate for the mean waiting time is just the average of all the waiting times.
+
+```{r}
+waitingTimes <- faithfulData$waiting # we don't actually work with the eruption times, so we just need the waiting times
+X_nbar <- mean(waitingTimes)
+X_nbar
+```
+
+We know that to estimate the standard error, we can divide the square root of the sample variance by the square root of the number of observations.
+
+```{r}
+n <- length(waitingTimes)
+se_hat <- (sd(waitingTimes)) / (sqrt(n))
+se_hat
+```
+
+A 90 percent confidence interval for the mean waiting time is given by $\overline{X}_n \pm z_{\alpha / 2}\widehat{\text{se}},$ with $\alpha = 0.1$.
+
+```{r}
+alpha <- 0.1
+z <- qnorm(1 - alpha/2)
+CI <- c(X_nbar - z*se_hat, X_nbar + z*se_hat)
+CI
+```
+
+Finally, an estimate for the median waiting time is just given by $\widehat{F}_n^{-1}(0.5) = \inf \{x : \widehat{F}_n(x) \ge 0.5 \}$. In practice, that just means we can use median().
+
+```{r}
+median(waitingTimes)
+```
+
+
+
+
+
