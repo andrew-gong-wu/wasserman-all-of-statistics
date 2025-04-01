@@ -1,0 +1,133 @@
+---
+title: "8-2"
+author: "Andrew Wu"
+date: "2025-03-21"
+output: html_document
+---
+
+Conduct a simulation to compare the various bootstrap confidence interval methods. Let $n = 50$ and let $T(F) = \int (x-\mu)^3 dF(x)/\sigma^3$ be the skewness. Draw $Y_1, \ldots , Y_n \sim N(0,1)$ and set $X_i = e^{Y_i}, i=1,\ldots, n$. Construct the three types of bootstrap $95$ percent intervals for $T(F)$ from the data $X_1, \ldots , X_n$. Repeat this whole thing many times and estimate the true coverage of the three intervals.
+
+```{r}
+n <- 50
+Yis <- rnorm(n)
+Xis <- exp(Yis)
+```
+
+We want to estimate the skewness $T(F)$ for the lognormal distribution, basically. We know from an example in the previous chapter that the plug-in estimator for the skewness is given by $\frac{\frac{1}{n} \sum_i (X_i - \widehat{\mu})^3}{\widehat{\sigma}^3}$.
+
+```{r}
+skew <- function(data) {
+  n <- length(data)
+  mu_data <- mean(data)
+  sd_data <- sd(data)
+  
+  result <- sum(((data - mu_data) / sd_data)^3)/n 
+  # R is vectorized, so this will go through all the elements of data and sum up the individual quantities
+  
+  return(result)
+}
+```
+
+```{r}
+skew_estimate <- skew(Xis)
+```
+
+Now we bootstrap.
+
+```{r}
+B <- 1000
+skews <- c()
+
+for (i in 1:B) {
+  sampled_data <- sample(Xis,n,replace=TRUE)
+  skews[i] <- skew(sampled_data)
+}
+```
+
+Now the vector skews has all our bootstrapped skews. We can construct our confidence intervals.
+
+For the normal, we also need the bootstrapped standard error.
+
+```{r}
+se_boot <- sd(skews)
+alpha <- 0.05
+se_boot
+normal_ci <- c(skew_estimate - qnorm(1-alpha/2)*se_boot, skew_estimate + qnorm(1-alpha/2)*se_boot)
+normal_ci
+```
+
+Next, the pivotal:
+
+```{r}
+pivotal_ci <- c(2*skew_estimate - quantile(skews,1-alpha/2)[[1]], 2*skew_estimate - quantile(skews,alpha/2)[[1]])
+pivotal_ci
+```
+
+Finally, the percentile:
+
+```{r}
+percentile_ci <- c(quantile(skews,alpha/2)[[1]], quantile(skews,1-alpha/2)[[1]])
+percentile_ci
+```
+
+Now we must repeat all of this many times and see how often each interval contains the true skewness, which we know to be $(e+2) \sqrt{e - 1}$.
+
+```{r}
+true_skewness <- (exp(1) + 2)*sqrt(exp(1) - 1)
+skews <- c()
+normal_empirical_coverages <- c()
+pivotal_empirical_coverages <- c()
+percentile_empirical_coverages <- c()
+```
+
+```{r}
+repetitions <- 1000
+for (i in 1:repetitions) {
+  
+  # begin by drawing the Yis and setting the Xis
+  Yis <- rnorm(n)
+  Xis <- exp(Yis)
+  
+  # estimate the skew with the drawn and set data
+  skew_estimate <- skew(Xis)
+  
+  # bootstrap
+  # note we previously set B=1000 and n=50
+  for (j in 1:B) {
+    sampled_data <- sample(Xis,n,replace=TRUE)
+    skews[j] <- skew(sampled_data)
+  }
+  
+  # get the standard error
+  se_boot <- sd(skews)
+  
+  # get the confidence intervals
+  normal_ci <- c(skew_estimate - qnorm(1-alpha/2)*se_boot, skew_estimate + qnorm(1-alpha/2)*se_boot)
+  pivotal_ci <- c(2*skew_estimate - quantile(skews,1-alpha/2)[[1]], 2*skew_estimate - quantile(skews,alpha/2)[[1]])
+  percentile_ci <- c(quantile(skews,alpha/2)[[1]], quantile(skews,1-alpha/2)[[1]])
+  
+  # check whether the true value is in the CIs
+  normal_empirical_coverages[i] <- (true_skewness >= normal_ci[1]) & (true_skewness <= normal_ci[2])
+  pivotal_empirical_coverages[i] <- (true_skewness >= pivotal_ci[1]) & (true_skewness <= pivotal_ci[2])
+  percentile_empirical_coverages[i] <- (true_skewness >= percentile_ci[1]) & (true_skewness <= percentile_ci[2])
+}
+```
+
+```{r}
+mean(normal_empirical_coverages)
+mean(pivotal_empirical_coverages)
+mean(percentile_empirical_coverages)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

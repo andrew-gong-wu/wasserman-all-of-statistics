@@ -1,0 +1,73 @@
+---
+title: "8-1"
+author: "Andrew Wu"
+date: "2025-03-21"
+output: html_document
+---
+
+Consider the LSAT/GPA data in Example 8.6. Find the plug-in estimate of the correlation coefficient. Estimate the standard error using the bootstrap. Find a $95$ percent confidence interval using the Normal, pivotal, and percentile methods.
+
+```{r}
+LSAT_GPA_data <- data.frame(
+  LSAT = c(576,635,558,578,666,580,555,661,651,605,653,575,545,572,594),
+  GPA = c(3.39,3.30,2.81,3.03,3.44,3.07,3.00,3.43,3.36,3.13,3.12,2.74,2.76,2.88,3.96)
+)
+```
+
+The plug-in estimate of the correlation is just the sample correlation.
+
+```{r}
+LSAT_GPA_correlation <- cor(LSAT_GPA_data$LSAT, LSAT_GPA_data$GPA)
+```
+
+Now we bootstrap. 
+
+```{r}
+set.seed(127)
+
+B <- 1000 
+n <- nrow(LSAT_GPA_data)
+bootCorrelations <- c()
+
+for (i in 1:B) {
+  sampled_data <- LSAT_GPA_data[sample(n, size = n, replace = TRUE), ] 
+  # sample(n, size=n) actually just samples n numbers from 1 through n
+  
+  sampled_correlation <- cor(sampled_data$LSAT, sampled_data$GPA)
+  # computing the statistic using bootstrapped data
+  
+  bootCorrelations[i] <- sampled_correlation
+  # storing it
+}
+```
+
+To estimate the standard error, we can just take the square root of the variance of correlations.
+
+```{r}
+se <- sqrt(var(bootCorrelations))
+se
+```
+
+A $95$ percent Normal confidence interval is given by $T_n \pm z_{\alpha / 2} \widehat{\text{se}}_{\text{boot}}$. 
+
+```{r}
+alpha <- 0.05
+normal_ci <- c(LSAT_GPA_correlation - qnorm(1 - alpha/2)*se, LSAT_GPA_correlation + qnorm(1-alpha/2)*se)
+normal_ci
+```
+
+A $95$ percent confidence interval using the pivotal method is given by $C_n = (2\widehat{\theta}_n - \widehat{\theta}_{1-\alpha / 2}^*, 2\widehat{\theta}_n - \widehat{\theta}_{\alpha / 2}^*)$. Here $\widehat{\theta}_n$ is the sample correlation and $\theta_{\beta}^*$ is the $\beta$ sample quantile of our bootCorrelations.
+
+```{r}
+pivotal_ci <- c(2*LSAT_GPA_correlation - quantile(bootCorrelations,1-alpha/2)[[1]], 2*LSAT_GPA_correlation - quantile(bootCorrelations,alpha/2)[[1]])
+pivotal_ci
+```
+
+Finally, a $95$ percent percentile interval is given by $C_n = (\theta_{\alpha/2}^*, \theta_{1-\alpha/2}^*)$.
+
+```{r}
+percentile_ci <- c(quantile(bootCorrelations,alpha / 2)[[1]], quantile(bootCorrelations, 1-alpha/2)[[1]])
+percentile_ci
+```
+
+

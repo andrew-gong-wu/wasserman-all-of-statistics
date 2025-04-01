@@ -1,0 +1,62 @@
+---
+title: "8-6"
+author: "Andrew Wu"
+date: "2025-03-23"
+output: html_document
+---
+
+Let $X_1, \ldots , X_n \sim \text{Normal}(\mu, 1)$. Let $\theta = e^\mu$ and let $\widehat{\theta} = e^{\overline{X}}$. Create a data set, using $\mu = 5$, consisting of $n = 100$ observations.
+
+(a) Use the bootstrap to get the se and $95$ percent confidence interval for $\theta$.
+
+(b) Plot a histogram of the bootstrap replications. This is an estimate of the distribution of $\widehat{\theta}$. Compare this to the true sampling distribution of $\widehat{\theta}.$
+
+```{r}
+set.seed(127)
+
+n <- 100
+mu <- 5
+Xis <- rnorm(n,mu,1)
+theta <- exp(mu)
+mu_hat <- mean(Xis)
+theta_hat <- exp(mu_hat)
+```
+
+Now we bootstrap.
+
+```{r}
+B <- 100
+sampled_theta_hats <- c()
+
+for (i in 1:B) {
+  sampled_data <- sample(Xis,n,replace=TRUE) # draw n times from Xis with replacement
+  sampled_theta_hats[i] <- exp(mean(sampled_data))
+}
+
+se_hat <- sd(sampled_theta_hats)
+se_hat
+```
+
+The problem doesn't really specify what type of $95$ percent confidence interval we're looking for, so I will give the percentile interval.
+
+```{r}
+alpha <- 0.05
+ci_percentile <- c(quantile(sampled_theta_hats,alpha/2)[[1]],quantile(sampled_theta_hats,1-alpha/2)[[1]])
+ci_percentile
+```
+
+Here is a histogram of the bootstrap replications.
+
+```{r}
+hist(sampled_theta_hats)
+```
+
+We can find the true distribution of $\widehat{\theta}$ by noting that (1) $\overline{X}_n \sim N(\mu, \frac{1}{n})$, and (2) $\widehat{\theta} \sim \exp (\overline{X}_n)$. It follows that $\widehat{\theta}$ follows a lognormal distribution.
+
+```{r}
+curve(dlnorm(x, meanlog=mu, sdlog = sqrt(1/n)),
+      from = 100, to = 200
+      )
+```
+
+The distributions look reasonably similar.

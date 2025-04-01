@@ -1,0 +1,41 @@
+---
+title: "8-7"
+author: "Andrew Wu"
+date: "2025-03-23"
+output: html_document
+---
+
+Let $X_1, \ldots , X_n \sim \text{Uniform}(0,\theta)$. Let $\widehat{\theta} = \max \{X_1, \ldots , X_n\}$. Generate a data set of size $50$ with $\theta = 1$. Compare the true distribution of $\widehat{\theta}$ to the histogram from the bootstrap.
+
+```{r}
+set.seed(127)
+n <- 50
+theta <- 1
+Xis <- runif(n,0,theta)
+theta_hat <- max(Xis)
+theta_hat
+```
+
+We find (elsewhere) that the true distribution of $\widehat{\theta}$ is $f(x) = 50x^{49}$ for $0 \le x \le 1$. Therefore, we'll bootstrap and then compare the histogram to this distribution.
+
+```{r}
+B <- 1000
+theta_hats <- c()
+
+for (i in 1:B) {
+  sampled_data <- sample(Xis, n, replace=TRUE)
+  theta_hats[i] <- max(sampled_data)
+}
+
+hist(theta_hats,
+     breaks=20,
+     main="Histogram of bootstrapped estimates for theta")
+```
+
+```{r}
+curve(50*x^{49}, from = 0.85, to = 1,
+      main = "True distribution of theta",
+      ylab = "f(x)")
+```
+
+Here the true distribution seems a lot thicker near $1$, compared to the bootstrapped histogram.

@@ -1,0 +1,133 @@
+---
+title: "8-3"
+author: "Andrew Wu"
+date: "2025-03-23"
+output: html_document
+---
+
+Let $X_1,\ldots , X_n \sim t_3$, where $n = 25$. Let $\theta = T(F) = (q_{.75} - q_{.25})/1.34$ where $q_p$ denotes the $p$th quantile. Do a simulation to compare the coverage and length of the following confidence intervals for $\theta$: (i) Normal interval with standard error from the bootstrap, (ii) bootstrap percentile interval, and (iii) pivotal bootstrap interval.
+
+```{r}
+set.seed(127)
+
+n <- 25 # number of observations
+df <- 3 # degrees of freedom
+
+Xis <- rt(n,df)
+```
+
+Now we compute an estimate of for this data.
+
+```{r}
+q <- quantile(Xis,c(0.25,0.75)) # obtain q_{.25} and q_{.75}
+theta_hat <- (q[[2]] - q[[1]])/1.34
+theta_hat
+```
+
+To get the confidence intervals, we first bootstrap.
+
+```{r}
+B <- 1000 
+theta_hats <- c()
+
+for (i in 1:B) {
+  sampled_data <- sample(Xis,n,replace=TRUE) # draw n samples from Xis with replacement
+  q <- quantile(sampled_data,c(0.25,0.75)) # compute the 0.25 and 0.75 quantiles
+  theta_hats[i] <- (q[[2]] - q[[1]])/1.34 # compute the statistic for the sample
+}
+```
+
+The standard error is the standard deviation of the thetas.
+
+```{r}
+se_boot <- sd(theta_hats)
+se_boot
+```
+
+For the normal confidence interval:
+
+```{r}
+alpha <- 0.05
+normal_ci <- c(theta_hat - qnorm(1-alpha/2)*se_boot, theta_hat + qnorm(1-alpha/2)*se_boot)
+normal_ci
+```
+
+The percentile:
+
+```{r}
+percentile_ci <- c(quantile(theta_hats,alpha/2)[[1]], quantile(theta_hats,1-alpha/2)[[1]])
+percentile_ci
+```
+
+The pivotal:
+
+```{r}
+pivotal_ci <- c(2*theta_hat - quantile(theta_hats,1-alpha/2)[[1]], 2*theta_hat - quantile(theta_hats,alpha/2)[[1]])
+pivotal_ci
+```
+
+Now note that our task is to run a simulation to see how often these intervals contain the true value. Accordingly, we first find the true value of the statistic, and then simulate.
+
+```{r}
+theta <- (qt(0.75,df) - qt(0.25,df))/1.34
+theta
+```
+
+```{r}
+repetitions <- 5000
+
+# track coverages
+normal_empirical_coverages <- c()
+pivotal_empirical_coverages <- c()
+percentile_empirical_coverages <- c()
+
+for (i in 1:repetitions) {
+  
+  # draw 25 observations from t_3. note we set n and df earlier
+  Xis <- rt(n,df)
+  
+  # get theta_hat
+  q <- quantile(Xis,c(0.25,0.75))
+  theta_hat <- (q[[2]]-q[[1]])/1.34
+  
+  # bootstrap
+  theta_hats <- c()
+  for (j in 1:B) {
+    sampled_data <- sample(Xis, n, replace=TRUE)
+    q <- quantile(sampled_data,c(0.25,0.75))
+    theta_hats[j] <- (q[[2]] - q[[1]])/1.34
+  }
+  
+  # get the standard error
+  se_boot <- sd(theta_hats)
+  
+  # create confidence intervals
+  normal_ci <- c(theta_hat - qnorm(1-alpha/2)*se_boot, theta_hat + qnorm(1-alpha/2)*se_boot)
+  percentile_ci <- c(quantile(theta_hats,alpha/2)[[1]], quantile(theta_hats,1-alpha/2)[[1]])
+  pivotal_ci <- c(2*theta_hat - quantile(theta_hats,1-alpha/2)[[1]], 2*theta_hat - quantile(theta_hats,alpha/2)[[1]])
+
+  # check whether the true value is in the CIs
+  normal_empirical_coverages[i] <- (theta >= normal_ci[1]) & (theta <= normal_ci[2])
+  pivotal_empirical_coverages[i] <- (theta >= pivotal_ci[1]) & (theta <= pivotal_ci[2])
+  percentile_empirical_coverages[i] <- (theta >= percentile_ci[1]) & (theta <= percentile_ci[2])
+}
+```
+
+```{r}
+mean(normal_empirical_coverages)
+mean(pivotal_empirical_coverages)
+mean(percentile_empirical_coverages)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
