@@ -1,0 +1,61 @@
+---
+title: "9-7"
+author: "Andrew Wu"
+date: "2025-04-12"
+output: html_document
+---
+
+$n_1$ people are given treatment $1$ and $n_2$ people are given treatment $2$. Let $X_1$ be the number of people on treatment $1$ who respond favorably to the treatment and let $X_2$ be the number of people on treatment $2$ who respond favorably. Assume that $X_1 \sim \bin(n_1,p_1)$ and $X_2 \sim \bin(n_2,p_2)$. Let $\psi = p_1 - p_2$ with MLE $\widehat{\psi}$.
+
+Suppose $n_1 = n_2 = 200, X_1 = 160,$ and $X_2 = 148$. Find $\widehat{\psi}$. Find an approximate $90$ percent confidence interval for $\psi$ using the delta method and using the parametric bootstrap.
+
+```{r}
+n1 <- 200
+n2 <- 200
+X1 <- 160
+X2 <- 148
+
+# we already computed a general form for psi_hat in the other document
+p1_hat <- X1/n1
+p2_hat <- X2/n2
+psi_hat <- p1_hat - p2_hat
+
+psi_hat
+```
+
+To find a $90$ percent confidence interval using the delta method, we'll use the standard error we just computed.
+
+```{r}
+se_hat <- sqrt(p1_hat*(1 - p1_hat) / n1 + p2_hat*(1 - p2_hat) / n2)
+CI <- c(psi_hat - qnorm(0.95)*se_hat, psi_hat + qnorm(0.95)*se_hat)
+CI
+```
+
+Now we'll find the $90$ percent confidence interval using the bootstrap.
+
+```{r}
+rbinom(7,n1,p1_hat)
+```
+
+```{r}
+B <- 10000
+
+# don't actually need a for loop this time with rbinom
+bootstrap_X1s <- rbinom(B,n1,p1_hat)
+bootstrap_X2s <- rbinom(B,n2,p2_hat)
+
+# use psi = p1 - p2
+bootstrap_psis <- (bootstrap_X1s - bootstrap_X2s)/n1 # need probabilities, so can't just simply subtract
+bootstrap_se <- sd(bootstrap_psis)
+bootstrap_se
+```
+
+Now we compute the confidence interval similarly.
+
+```{r}
+CI_bootstrap <- c(psi_hat - qnorm(0.95)*bootstrap_se, psi_hat + qnorm(0.95)*bootstrap_se)
+CI_bootstrap
+```
+
+
+

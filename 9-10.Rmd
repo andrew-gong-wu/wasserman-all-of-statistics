@@ -1,0 +1,47 @@
+---
+title: "9-10"
+author: "Andrew Wu"
+date: "2025-04-13"
+output: html_document
+---
+
+Let $X_1, \ldots , X_n \sim \text{Uniform}(0,\theta)$. The MLE is $\widehat{\theta} = \max \{X_1, \ldots , X_n\}$. Generate a dataset of size $50$ with $\theta = 1$.
+
+Compare the true distribution of $\widehat{\theta}$ to the histogram from the parametric bootstrap.
+
+Show that for the parametric bootstrap $\mathbb{P}(\widehat{\theta}^* = \widehat{\theta} = 0)$.
+
+(Note that most of this problem was completed previously in chapter 8.)
+
+```{r}
+set.seed(127)
+n <- 50
+theta <- 1
+Xis <- runif(n,0,theta)
+theta_hat <- max(Xis)
+theta_hat
+```
+
+Now we create the parametric bootstrap.
+
+```{r}
+B <- 10000
+thetas_parametric <- numeric(B)
+
+for (i in 1:B) {
+  Xis_parametric <- runif(n,0,theta_hat) # use the MLE of theta
+  thetas_parametric[i] <- max(Xis_parametric)
+}
+
+hist(thetas_parametric)
+```
+
+```{r}
+curve(50*x^{49}, from = 0.85, to = 1,
+      main = "True distribution of theta",
+      ylab = "f(x)")
+```
+
+These distributions are quite similar.
+
+Regarding the other part of the problem, we have $\mathbb{P}(\widehat{\theta}^* = \widehat{\theta} = 0)$ because $\widehat{\theta}^*$ is the maximum among samples drawn from $\text{Uniform}(0,\widehat{\theta})$ and $\mathbb{P}(X = \widehat{\theta}) = 0$ when $X \sim \text{Uniform}(0,\widehat{\theta})$.

@@ -1,0 +1,107 @@
+---
+title: "9-9"
+author: "Andrew Wu"
+date: "2025-04-13"
+output: html_document
+---
+
+Let $X_1, \ldots , X_n \sim N(\mu, 1)$. Let $\theta = e^\mu$ and let $\widehat{\theta} = e^{\overline{X}}$ be the MLE. Using $\mu = 5$, create a data set consisting of $n = 100$ observations.
+
+(a) Use (i) the delta method, (ii) the parametric bootstrap, and (iii) the nonparametric bootstrap to get $\widehat{\text{se}}$ and a $95$ percent confidence interval for $\theta$.
+
+(b) Plot a histogram of the bootstrap replications for the parametric and nonparametric bootstraps. These are estimates of the distribution of $\widehat{\theta}$. The delta method also gives an approximation to this distribution: namely, $N(\widehat{\theta}, \text{se}^2)$. Compare these to the true sampling distribution of $\widehat{\theta}$, which you can get by simulation. Which approximation is closer to the true distribution?
+
+For part (a): We computed separately that the delta method gives $\widehat{\text{se}}(\widehat{\theta}) = e^{\overline{X}} \cdot \sqrt{1/n}$.
+
+```{r}
+set.seed(127)
+n <- 100
+mu <- 5
+
+# compute SE with delta method
+Xis <- rnorm(n,mu,1)
+X_bar <- mean(Xis)
+se_delta <- exp(X_bar) / sqrt(n)
+se_delta
+
+# get a 95% confidence interval
+theta_hat <- exp(X_bar)
+CI_delta <- c(theta_hat - qnorm(0.975)*se_delta, theta_hat + qnorm(0.975)*se_delta)
+CI_delta
+```
+
+Next, we'll use the parametric bootstrap.
+
+```{r}
+set.seed(127)
+
+B <- 10000
+thetas_parametric <- numeric(B)
+
+for (i in 1:B) {
+  Xis_bootstrap <- rnorm(n,X_bar,1) # draw n samples from N(X_bar, 1)
+  theta_bootstrap <- exp(mean(Xis_bootstrap)) # compute the bootstrapped estimator for theta
+  thetas_parametric[i] <- theta_bootstrap # store in thetas_parametric
+}
+
+se_parametric <- sd(thetas_parametric)
+se_parametric
+
+CI_parametric_normal <- c(theta_hat - qnorm(0.975)*se_parametric, theta_hat + qnorm(0.975)*se_parametric)
+CI_parametric_normal
+
+CI_parametric_percentile <- quantile(thetas_parametric,c(0.025,0.975))
+CI_parametric_percentile
+```
+
+And finally, the nonparametric bootstrap.
+
+```{r}
+set.seed(127)
+thetas_nonparametric <- numeric(B)
+
+for (i in 1:B) {
+  Xis_bootstrap <- sample(Xis,n,replace=TRUE) # draw n samples from the Xis with replacement
+  theta_bootstrap <- exp(mean(Xis_bootstrap)) # compute the bootstrapped estimator for theta
+  thetas_nonparametric[i] <- theta_bootstrap # store in thetas_nonparametric
+}
+
+se_nonparametric <- sd(thetas_nonparametric)
+se_nonparametric
+
+CI_nonparametric_normal <- c(theta_hat - qnorm(0.975)*se_nonparametric, theta_hat + qnorm(0.975)*se_nonparametric)
+CI_nonparametric_normal
+
+CI_nonparametric_percentile <- quantile(thetas_nonparametric, c(0.025,0.975))
+CI_nonparametric_percentile
+```
+
+For part (b), we will plot the histograms.
+
+```{r}
+hist(thetas_parametric, xlim=c(100,240), breaks=14)
+hist(thetas_nonparametric, xlim=c(100,240), breaks=14)
+```
+
+Then, the delta method approximation.
+
+```{r}
+curve(dnorm(x, theta_hat, se_delta), from = 100, to = 240)
+```
+
+Finally, we'll simulate the distribution of $\widehat{\theta}$.
+
+```{r}
+set.seed(127)
+thetas_simulated <- numeric(B)
+
+for (i in 1:B) {
+  Xis_simulated <- rnorm(n, mu, 1)
+  X_bar_simulated <- mean(Xis_simulated)
+  thetas_simulated[i] <- exp(X_bar_simulated)
+}
+
+hist(thetas_simulated, xlim=c(100,240), breaks=14)
+```
+
+They're all quite similar. 

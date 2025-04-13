@@ -1,0 +1,53 @@
+---
+title: "9-3"
+author: "Andrew Wu"
+date: "2025-04-05"
+output: html_document
+---
+
+Let $X_1, \ldots, X_n \sim N(\mu, \sigma^2)$. Let $\tau$ be the $.95$ percentile, i.e. $\mathbb{P}(X < \tau) = .05$. Suppose the data are as below. Find the MLE, the standard error using the delta method, and the standard error using the parametric bootstrap.
+
+```{r}
+Xis <- c(3.23,-2.50,1.88,-0.68,4.43,0.17,
+         1.03,-0.07,-0.01,0.76,1.76,3.18,
+         0.33,-0.31,0.30,-0.61,1.52,5.43,
+         1.54,2.28,0.42,2.33,-1.03,4.00,
+         0.39) # given this data in the textbook
+n <- length(Xis)
+mu_hat = mean(Xis) # estimator for mu
+sigma_hat = sqrt(var(Xis) * (n-1) / n) # estimator for sigma
+```
+
+We computed what the MLE and standard error should be in the other document, so we'll just find them for this specific dataset.
+
+```{r}
+tau_hat <- qnorm(0.95) * sigma_hat + mu_hat
+tau_hat # MLE of tau
+```
+
+```{r}
+se_hat <- sigma_hat * sqrt(1 + 0.5*qnorm(0.95)^2) / sqrt(n)
+se_hat # se of tau
+```
+
+Now we'll find the standard error with the parametric bootstrap. We need to sample from $f(x; \widehat{\theta})$.
+
+```{r}
+B <- 10000
+taus <- c()
+
+for (i in 1:B) {
+  Xis_bootstrap <- rnorm(n,mu_hat,sigma_hat) # sample n observations
+  mu_bootstrap <- mean(Xis_bootstrap) # bootstrap mean
+  sigma_bootstrap <- sqrt(var(Xis_bootstrap) * (n-1) / n) # bootstrap sigma
+  tau_bootstrap <- qnorm(0.95) * sigma_bootstrap + mu_bootstrap
+  taus[i] <- tau_bootstrap
+}
+
+se_boot <- sd(taus)
+se_boot
+```
+
+
+
+
