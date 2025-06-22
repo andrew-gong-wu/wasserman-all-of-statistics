@@ -1,0 +1,49 @@
+---
+title: "10-7"
+author: "Andrew Wu"
+date: "2025-06-17"
+output: html_document
+---
+
+In 1861, 10 essays appeared in the New Orleans Daily Crescent. They were signed "Quintus Curtius Snodgrass" and some people suspected they were actually written by Mark Twain. To investigate this, we will consider the proportion of three letter words found in an author's work. From eight Twain essays we have:
+
+$.225, .262, .217, .240, .230, .229, .235, .217$
+
+From $10$ Snodgrass essays we have:
+
+$.209, .205, .196, .210, .202, .207, .224, .223, .220, .201$
+
+Use a permutation test to avoid the use of large sample methods. What is your conclusion?
+
+In this case, we would suppose $.225, \ldots , .217 \sim F_X$ and $.209, \ldots , .201 \sim F_Y$. We are testing $H_0 : F_X = F_Y$ versus $H_1: F_X \neq F_Y$.
+
+Let $T(x_1, \ldots , x_m, y_1, \ldots , y_n)$ be our test statistic, the absolute difference in means; that is, $T(X_1, \ldots , X_m, Y_1, \ldots, Y_n) = |\overline{X}_m - \overline{Y}_n|.$ That is, the observed value $t_{obs}$ is equal to $0.022175$. We now conduct our permutation test. 
+
+```{r}
+set.seed(127)
+
+# given data
+Xis = c(.225, .262, .217, .240, .230, .229, .235, .217)
+Yis = c(.209, .205, .196, .210, .202, .207, .224, .223, .220, .201)
+
+# combine them so we can permute
+combined = c(Xis, Yis)
+
+# we want to repeat B times and we'll store the test statistics in a vector
+B <- 10000
+test_stats <- c()
+
+# do the permuting
+for (i in 1:B) {
+  permutation <- sample(combined)
+  permute_test_stat <- abs(mean(permutation[1:8]) - mean(permutation[9:18]))
+  test_stats[i] <- permute_test_stat
+}
+
+# compute the p-value
+t_observed <- 0.022175
+pvalue <- mean(test_stats > t_observed)
+format(pvalue, scientific = FALSE)
+```
+
+We conclude the approximate p-value is 0.0007.

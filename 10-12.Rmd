@@ -1,0 +1,36 @@
+---
+title: "10-12"
+author: "Andrew Wu"
+date: "2025-06-19"
+output: html_document
+---
+
+Let $\lambda_0 = 1, n = 20,$ and $\alpha = .05$. Simulate $X_1, \ldots , X_n \sim \text{Poisson}(\lambda_0)$ and perform the Wald test. Repeat many times and count often you reject the null. How close is the type I error rate to .05?
+
+```{r}
+set.seed(127)
+
+# given information
+lambda_0 <- 1
+n <- 20
+alpha <- 0.05
+
+# repeat M times and track how many times we reject the null
+M <- 1000
+count_reject_null <- 0
+
+# z_alpha/2
+z <- qnorm(1-alpha/2)
+
+for (i in 1:M) {
+  simulation <- rpois(n,lambda_0)
+  wald_statistic <- (mean(simulation) - lambda_0)/(sqrt(lambda_0/n))
+  if (abs(wald_statistic) > z) {
+    count_reject_null = count_reject_null + 1
+  }
+}
+z
+count_reject_null
+```
+
+In this simulation, we rejected the null 49 times out of 1000, which is remarkably close to a Type I error rate of .05.
