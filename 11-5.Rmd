@@ -1,0 +1,26 @@
+---
+title: "11-5"
+author: "Andrew Wu"
+date: "2025-06-28"
+output: html_document
+---
+
+Consider the following Bernoulli($p$) observations: $0, 1, 0, 1, 0, 0, 0, 0, 0 ,0.$ Plot the posterior for $p$ using the priors $\text{Beta}(a, a)$ with $a = 1/2,1, 10, 100.$
+
+```{r}
+observations <- c(0,1,0,1,0,0,0,0,0,0)
+n <- length(observations)
+s <- sum(observations)
+```
+
+We have $f(p|x^n) \propto f(x^n | p) f(p)$, by Bayes' theorem. Then $f(x^n | p) = \binom{n}{s}p^s(1-p)^{n-s}.$ With $f(p) \propto p^{a-1}(1-p)^{a-1}$, we obtain
+$$f(p|x^n) \propto p^{s+a-1}(1-p)^{n-s + a - 1}$$
+so $p|X^n \sim \text{Beta}(s+a,n-s+a).$
+
+Now we plot.
+
+```{r}
+for (a in c(0.5,1,10,100)) {
+  curve(dbeta(x,s+a,n-s+a),from=0,to=1)
+}
+```

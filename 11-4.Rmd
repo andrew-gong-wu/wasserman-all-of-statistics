@@ -1,0 +1,92 @@
+---
+title: '11.4'
+author: "Andrew Wu"
+date: "2025-06-29"
+output: html_document
+---
+
+Suppose that $50$ people are given a placebo and $50$ are given a new treatment. $30$ placebo patients show improvement while $40$ treated patients show improvement. Let $\tau = p_2 - p_1$, where $p_2$ is the probability of improving under treatment and $p_1$ is the probability of improving under placebo.
+
+(b) Find the standard error and $90$ percent confidence interval using the parametric bootstrap.
+(c) With the prior $f(p_1,p_2) = 1$, use simulation to find the posterior mean and posterior $90$ percent interval for $\tau$.
+(e) Use simulation to find the posterior mean and posterior $90$ percent interval for $\psi$.
+
+```{r}
+# noting given information
+n <- 50
+s1 <- 30
+s2 <- 40
+```
+
+We found in the previous part the MLEs of $p_1, p_2,$ and $\tau$.
+
+```{r}
+p_1_hat <- s1/n
+p_2_hat <- s2/n
+tau_hat <- p_2_hat - p_1_hat
+```
+
+Now we bootstrap.
+
+```{r}
+B <- 10000
+tau_bootstrapped <- c()
+for (i in 1:B) {
+  # X_i := # of ppl who show improvement under placebo
+  X_i <- sum(rbinom(n,1,p_1_hat))
+  # Y_i := ... under new treatment
+  Y_i <- sum(rbinom(n,1,p_2_hat))
+  tau_bootstrapped[i] <- Y_i/n - X_i/n
+}
+```
+
+Now we calculate the estimated standard error and a 90% confidence interval.
+
+```{r}
+se_boot <- sd(tau_bootstrapped)
+se_boot
+```
+
+```{r}
+CI_boot <- quantile(tau_bootstrapped, probs = c(0.05, 0.95))
+CI_boot
+```
+
+With posterior $f(p_1,p_2) = 1$, we have by Bayes' theorem that $$f(p_1,p_2 | x_i,y_i) \propto f(x_i,y_i | p_1, p_2) f(p_1,p_2).$$
+
+Thus $$f(p_1,p_2 | x_i,y_i) \propto p_1^{x_i}(1-p_1)^{n - x_i} p_2^{y_i}(1-p_2)^{n - y_i}.$$
+
+Note also that $$f(p_1,p_2 | x_i,y_i) = f(p_1 | x_i) f(p_2 | y_i)$$ so $p_1, p_2$ are independent under the posterior. Moreover, $p_1 | x_i \sim \text{Beta} (x_i+1, n - x_i + 1)$ and $p_2 | y_i \sim \text{Beta} (y_i + 1, n - y_i + 1)$.
+
+That means we can simulate as follows:
+
+```{r}
+# number of simulations of tau
+N <- 1000
+
+# simulate p1s and p2s, to get simulated taus
+p1_sim <- rbeta(N, s1 + 1, n - s1 + 1)
+p2_sim <- rbeta(N, s2 + 1, n - s2 + 1)
+tau_sim <- p2_sim - p1_sim
+
+# obtain posterior mean
+tau_post_mean <- mean(tau_sim)
+tau_post_mean
+
+# obtain CI
+tau_post_CI <- quantile(tau_sim, probs = c(0.05, 0.95))
+tau_post_CI
+```
+Now we'll find the posterior mean and posterior $90$ percent interval for $\psi$.
+
+```{r}
+psi_sim <- log((p1_sim/(1-p1_sim)) / (p2_sim/(1-p2_sim)))
+
+# obtain posterior mean
+psi_post_mean <- mean(psi_sim)
+psi_post_mean
+
+# obtain CI
+psi_post_CI <- quantile(psi_sim, probs = c(0.05,0.95))
+psi_post_CI
+```

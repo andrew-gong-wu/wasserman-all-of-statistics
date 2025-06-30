@@ -1,0 +1,75 @@
+---
+title: "11-2"
+author: "Andrew Wu"
+date: "2025-06-25"
+output: html_document
+---
+
+Let $X_1, \ldots , X_n \sim \text{Normal}(\mu, 1).$
+
+(a) Simulate a data set (using $\mu = 5$) consisting of $n = 100$ observations.
+(b) Take $f(\mu) = 1$ and find the posterior density. Plot the density.
+(c) Simulate $1000$ draws from the posterior. Plot a histogram of the simulated values and compare the histogram to the answer in (b).
+(d) Let $\theta = e^{\mu}$. Find the posterior density for $\theta$ analytically and by simulation.
+(e) Find a $95$ percent posterior interval for $\mu$.
+(f) Find a $95$ percent confidence interval for $\theta$.
+
+```{r}
+# part (a)
+set.seed(127)
+mu = 5
+n = 100
+
+simulated <- rnorm(100,5,1)
+```
+
+With $f(\mu) = 1$, we can use Bayes' theorem. We have $f(\mu | x^n) \propto f(x^n | \mu) f(\mu)$, so $f(\mu | x^n) \propto \prod_{i=1}^n \frac{1}{\sqrt{2\pi}} \exp(-\frac{1}{2}(x_i - \mu)^2).$
+
+It follows that $$f(\mu | x^n) \propto \exp \left(-\frac{1}{2} \sum_{i=1}^n (x_i - \mu)^2\right).$$ But $\sum_{i=1}^n(x_i - \mu)^2 = \sum_{i=1}^n x_i^2 - 2n\mu\overline{X} + n\mu^2$. So $$f(\mu | x^n) \propto \exp \left( -\frac{n}{2} \left(\frac{1}{n}\sum_{i=1}^n x_i^2 - 2\mu\overline{X} + \mu^2 \right) \right).$$ Now we will complete the square. Note that $$(\mu - \overline{X})^2 = \mu^2 - 2\mu \overline{X} + \overline{X}^2.$$ So it follows that 
+$$f(\mu | x^n) \propto \exp \left( -\frac{n}{2}  (\mu - \overline{X})^2 \right)$$
+and we obtain $\mu | x^n \sim N(\overline{X}, \frac{1}{n}).$
+
+We'll use the simulated data to plot the posterior density.
+
+```{r}
+X_bar <- mean(simulated)
+curve(dnorm(x, X_bar,1/n), from=4.9, to = 5.1)
+```
+
+Now we'll simulate $1000$ draws from the posterior.
+
+```{r}
+posterior_simulated <- rnorm(1000,X_bar,1/n)
+hist(posterior_simulated)
+```
+The histogram is quite similar to the density plot.
+
+Note, of course, that $\theta > 0.$ Finding the posterior density $H$ for $\theta = e^\mu$ begins with computing the integral
+$$H (\theta | x^n) = \int_A f(\mu | x^n) d\mu$$
+with $A = \{ \mu : e^\mu \le \theta\}$.
+
+We worked out previously that $\mu | x^n \sim N(\overline{X}, \frac{1}{n}).$ With this, we get the integral
+$$H(\theta | x^n) = \int_{-\infty}^{\log \theta} f(\mu | x^n) d\mu.$$
+Then $h(\theta | x^n) = f(\log \theta | x^n) \frac{\partial}{\partial \theta}\log \theta = \frac{\sqrt{n}}{\theta\sqrt{2\pi}} \exp \left( -\frac{n}{2} (\log \theta - \overline{X})^2\right).$
+
+To find the posterior density by simulation, we can do the following:
+
+```{r}
+simulated_thetas <- exp(simulated)
+hist(simulated_thetas, breaks=20)
+```
+
+Our posterior is $\mu | x^n \sim N(\overline{X}, \frac{1}{n}).$ Let $\alpha = 0.05$. Then 
+$$\mathbb{P} \left(-z_{\alpha / 2} < \frac{\mu - \overline{X}}{\sqrt{1/n}} < z_{\alpha / 2} \right) \approx 0.95$$
+and it follows that a $95$ percent posterior interval for $\mu$ is given by 
+$$\left(\overline{X}-z_{\alpha/2}\sqrt{1/n}, \overline{X}+z_{\alpha/2}\sqrt{1/n}\right).$$
+
+As for an interval for $\theta$, we know via the Bayesian delta method that $$\theta | X^n \approx N\left(e^{\widehat{\mu}}, (\widehat{\text{se}} \cdot e^{\widehat{\mu}})^2\right).$$
+
+Here we have $\widehat{\mu} = \overline{X}$ and $\text{se}^2 = \mathbb{V}(\widehat{\mu}) = \mathbb{V}(\overline{X}) = \frac{1}{n} \cdot \mathbb{V}(X_i) = \frac{1}{n}.$ Thus
+$$\theta | X^n \approx N \left( e^{\overline{X}}, \frac{e^{2\overline{X}}}{n}\right).$$
+Thus 
+$$\mathbb{P}\left(-z_{\alpha / 2} < \frac{\theta - e^{\overline{X}}}{\sqrt{e^{2\overline{X}}/n}} < z_{\alpha / 2} \right) \approx 0.95$$
+and it follows that a $95$ percent posterior interval for $\theta$ is given by
+$$\left(e^{\overline{X}} - z_{\alpha/2}\sqrt{e^{2\overline{X}}/n}, e^{\overline{X}} + z_{\alpha/2}\sqrt{e^{2\overline{X}}/n} \right).$$
+
