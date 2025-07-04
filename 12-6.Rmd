@@ -1,0 +1,74 @@
+---
+title: "12-6"
+author: "Andrew Wu"
+date: "2025-07-04"
+output: html_document
+---
+
+Compare the risk of the MLE and the James-Stein estimator by simulation. Try various values of $n$ and various vectors $\theta$. Summarize your results.
+
+The risk of the James-Stein estimator $\widehat{\theta}^S$ is
+$$\mathbb{V}\left(\widehat{\theta}^S\right) + \text{bias}^2\left(\widehat{\theta}^S\right).$$
+
+
+
+```{r}
+# we'll write a function that generates estimators and simulates risks given thetas and Xis
+generate_estimators <- function(theta_is) {
+  n <- length(theta_is)
+  
+  # generate N(theta_i, 1) RVs
+  X_is <- c()
+  for (i in (1:n)) {
+    X_is[i] <- rnorm(1,theta_is[i],1)
+  }
+  
+  # default estimator
+  MLE_estimator <- X_is
+  
+  # james-stein estimator
+  JS_estimator <- X_is * max((1 - (n-2)/sum(X_is^2)),0)
+  
+  # return the estimators
+  return(list(MLE_estimator,JS_estimator))
+}
+```
+
+```{r}
+# next, a function that generates the loss
+generate_loss <- function(theta_is,estimator) {
+  # we're using squared error loss
+  return(sum((theta_is - estimator)^2))
+}
+```
+
+```{r}
+# finally, a function that generates the risks
+# B is the total number of simulations we run
+generate_risks <- function(theta_is,B) { 
+  MLE_losses <- c()
+  JS_losses <- c()
+  
+  # simulate B runs of generating losses
+  for (i in 1:B) {
+    estimators <- generate_estimators(theta_is)
+    MLE_losses[i] <- generate_loss(theta_is,estimators[[1]])
+    JS_losses[i] <- generate_loss(theta_is,estimators[[2]])
+  }
+  
+  # average the losses to get the simulated expected risk
+  MLE_sim_risk <- mean(MLE_losses)
+  JS_sim_risk <- mean(JS_losses)
+  return(list(MLE_sim_risk,JS_sim_risk))
+}
+```
+
+```{r}
+generate_risks(c(3,5,12),10000)
+generate_risks(c(1,4,2,10),10000)
+generate_risks(c(5,4,7,10,3,1),10000)
+```
+
+In each case, the simulated risk for the MLE estimator is higher than the simulated risk for the James-Stein estimator.
+
+
