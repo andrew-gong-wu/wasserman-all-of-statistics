@@ -1,0 +1,446 @@
+---
+title: "13-6, 13-7"
+author: "Andrew Wu"
+date: "2025-07-23"
+output: html_document
+---
+
+Get the passenger car mileage data from https://lib.stat.cmu.edu/DASL/Datafiles/carmpgdat.html.
+
+(a) Fit a simple linear regression model to predict MPG from HP. Summarize your analysis. Include a plot of the data with the fitted line.
+
+(b) Repeat the analysis by use log(MPG) as the response. Compare the analyses.
+
+(c) Fit a multiple linear regression model to predict MPG from the other variables. Summarize your analysis.
+
+(d) Use Mallow $C_p$ to select a best sub-model. To search through the models try (i) forward stepwise, (ii) backward stepwise. Summarize your findings.
+
+(e) Use the Zheng-Loh model selection method and compare to (d).
+
+(f) Perform all possible regressions. Compare $C_p$ and BIC. Compare the results.
+
+```{r}
+url <- "https://lib.stat.cmu.edu/DASL/Datafiles/carmpgdat.html"
+destfile <- "mileage.dat"
+download.file(url,destfile)
+```
+
+```{r}
+raw_data <- readLines(destfile)
+raw_data
+```
+
+We have to clean the file first.
+
+```{r}
+raw_data <- raw_data[-c(1:30,32,115)] # remove start lines, blank line, end line
+raw_data[1] <- "MAKE AND MODEL \t VOL \t HP \t MPG \t SP \t WT" # fix header
+raw_data
+```
+We want a table with six columns: the make and model, VOL, HP, MPG, SP, and WT. Now we can go through the table and check if any of the lines don't match our schema.
+
+```{r}
+library(readr)
+```
+
+```{r}
+writeLines(raw_data, "processing_mileage.dat") # throw our data back into a file
+
+# count how many fields each row has. split on \t.
+field_counts <- count_fields(
+  file = "processing_mileage.dat",
+  tokenizer = tokenizer_delim("\t")
+)
+
+bad_line_indices <- which(field_counts != 6)
+bad_line_indices
+```
+
+Now we'll get the good and the bad lines, and then clean the bad ones.
+
+```{r}
+good_lines <- raw_data[-bad_line_indices]
+bad_lines <- raw_data[bad_line_indices]
+```
+
+```{r}
+bad_lines
+```
+
+A quick scan reveals that all the bad lines are of the same form: they have two \t characters between the MAKE AND MODEL and the VOL.
+
+```{r}
+bad_lines <- sub("\t", "",bad_lines) # sub replaces the first instance of every "\t" with ""
+bad_lines
+```
+
+With the bad lines cleaned, we'll put the good and bad lines back together and read them into a table.
+
+```{r}
+all_lines
+```
+
+```{r}
+all_lines <- c(good_lines,bad_lines)
+writeLines(all_lines,"cleaned_mileage.dat") # create a cleaned_mileage.dat file to read data from
+mileageData <- read.table("cleaned_mileage.dat",header=TRUE,sep="\t")
+head(mileageData)
+```
+
+Now let's predict MPG from HP.
+
+```{r}
+model_MPG_HP <- lm(MPG ~ HP, data = mileageData)
+summary(model_MPG_HP)
+```
+
+This means that $\widehat{\beta}_0 \approx 50.07$ and $\widehat{\beta}_1 \approx -0.14$. Here is a graph, with the line and the data.
+
+```{r}
+plot(mileageData$HP, mileageData$MPG,
+     xlab = "Horsepower (HP)", ylab = "Miles per Gallon (MPG)")
+abline(model_MPG_HP, col = "blue", lwd = 2)
+```
+
+Now we'll use log(MPG) as the response.
+
+```{r}
+model_logMPG_HP <- lm(log(MPG) ~ HP, data = mileageData)
+summary(model_logMPG_HP)
+```
+
+```{r}
+plot(mileageData$HP, log(mileageData$MPG),
+     xlab = "Horsepower (HP)", ylab = "Log of Miles per Gallon (log(MPG))")
+abline(model_logMPG_HP, col = "red", lwd = 2)
+```
+
+This time the data itself looks more linear; the previous graph was more right-skewed.
+
+Now we will perform a multiple linear regression model.
+
+```{r}
+model_MPG_multiple <- lm(MPG ~ VOL+HP+SP+WT, data = mileageData)
+summary(model_MPG_multiple)
+```
+
+We see here that volume is a weak predictor, with a p-value of $0.495$. We don't have evidence to reject the null hypothesis (that the effect of car volume upon MPG is zero, having accounted for HP, SP, and WT.
+
+The adjusted R^2 is 0.8667, so about 87% of the variability in MPG can be explained with these predictors.
+
+Now we'll select a best sub-model. Mallow's $C_p$ statistic is defined by
+$$\widehat{R}(S) = \widehat{R}_{tr}(S) + 2|S|\widehat{\sigma}^2.$$
+We will write a function to compute this statistic.
+
+```{r}
+# the function should take in a dataframe, a response index, and indices for the covariates
+compute_Mallow_Cp <- function(df,response_idx,covariates) { 
+  
+  # mallow has us get the estimated \sigma^2 from the full model first
+  
+  # that means we need a formula to paste into lm()
+  response_col_name <- colnames(df)[response_idx]
+  predictors_col_names <- colnames(df)[-response_idx]
+  f <- as.formula(paste(response_col_name,"~",paste(predictors_col_names,collapse="+")))
+  
+  # now, get the full model's estimated \sigma^2
+  full_model <- lm(f,data=df)
+  est_sigma_squared <- sigma(full_model)^2
+
+  # next, we want a dataframe with just the columns we care about
+  df_sub <- df[,c(response_idx,covariates)]
+  
+  # let's fit a linear model to df_sub
+  submodel <- lm(as.formula(paste(colnames(df_sub)[1], " ~ .")), data = df_sub)
+  
+  # we want the training error of the submodel
+  training_error <- deviance(submodel)
+  
+  # put it all together
+  Mallow <- training_error + 2*(length(covariates)+1)*est_sigma_squared
+  return(Mallow)
+}
+```
+
+With this function, we need a dataframe without the first MAKE.AND.MODEL column.
+
+```{r}
+updatedMileageData <- mileageData[-1]
+updatedMileageData
+```
+
+We will do forward stepwise regression. That means computing Mallow's $C_p$ statistic for all subsets of size $1$, picking the best, then picking the best among subsets of size $2$ (adding a covariate), etc. until the statistic does not get smaller.
+
+Our response index is $3$, because MPG is the third column.
+
+```{r}
+# the function needs to start with no covariates, add a covariate that minimizes the Mallow statistic, and repeat until adding more covariates does not decrease the Mallow statistic
+# it will return a linear model with those covariates
+forward_stepwise_regression <- function(df,response_idx) {
+  
+  # total possible number of covariates; subtract one because one column is the response
+  total_columns <- ncol(df)
+  total_possible_covariates <- total_columns - 1
+  
+  # define a list of the covariate indices we're using
+  current_covariates_indices <- c()
+  
+  # keep track of the mallow statistic value before adding a covariate
+  current_mallow <- Inf
+  
+  # for each possible additional covariate, we need to compute the Mallow statistic, and take the minimum among them
+  # we'll set up a for loop
+  for (i in 1:total_possible_covariates) {
+    
+    # first, we make a vector of column indices
+    # we'll check what happens when we add each column in this vector to current_covariates
+    columns_left <- setdiff(c(1:total_columns),current_covariates_indices)
+    columns_left <- columns_left[columns_left != response_idx]
+    
+
+    # now we loop through columns_left (excepting the response) computing the mallow statistic at each
+    # we'll set min_mallow to the minimum of them
+    min_mallow <- Inf
+    
+    for (j in columns_left) {
+      
+      # compute the Mallow statistic with the current covariates and the new covariate index j
+      mallow <- compute_Mallow_Cp(df,response_idx,c(current_covariates_indices,j)) 
+      
+      # we need to keep track of which column index leads to the minimum mallow
+      min_mallow = min(mallow,min_mallow)
+      if (min_mallow == mallow) {
+        next_covariate <- j
+      }
+    }
+
+    # we need to check whether min_mallow is actually less than current
+    if (min_mallow < current_mallow) {
+      
+      # if it is, then we need to reset current_mallow and add to current_covariates_indices
+      current_mallow <- min_mallow
+      current_covariates_indices <- c(current_covariates_indices,next_covariate)
+    } 
+    else {
+      
+      # if not, then we stop the forward regression
+      predictors_col_names <- colnames(df)[current_covariates_indices]
+      f <- as.formula(paste(colnames(df)[response_idx],"~",paste(predictors_col_names,collapse="+")))
+      return(lm(f,data=df))
+    }
+  }
+}
+```
+
+```{r}
+forward_stepwise_regression(updatedMileageData,3)
+```
+
+So this procedure means we end up using weight, top speed, and horsepower to predict miles per gallon. 
+
+Now we'll do a backwards stepwise regression.
+
+```{r}
+# the function needs to start with all covariates, remove a covariate to get a smaller mallow, and repeat until there's no way to remove another covariate without increasing the mallow
+# it will return a linear model with those covariates
+backward_stepwise_regression <- function(df,response_idx) {
+  
+  # total possible number of covariates; subtract one because one column is the response
+  total_columns <- ncol(df)
+  total_possible_covariates <- total_columns - 1
+  
+  # define a list of the covariate indices we're using
+  current_covariates_indices <- c(1:total_columns)
+  current_covariates_indices <- current_covariates_indices[current_covariates_indices != response_idx]
+  
+  # keep track of the mallow statistic value before removing a covariate
+  current_mallow <- compute_Mallow_Cp(df,response_idx,current_covariates_indices)
+  
+  # for each possible removed covariate, we need to compute the mallow statistic, and take the minimum among them
+  # we'll set up a for loop
+  for (i in 1:total_possible_covariates) {
+    
+    # we'll loop through current_covariates_indices
+    # we'll compute the mallow statistic upon removal of each element 
+    min_mallow <- Inf
+    
+    for (j in current_covariates_indices) {
+      
+      # compute the Mallow statistic with current_covariates_indices without j
+      mallow <- compute_Mallow_Cp(df,response_idx,current_covariates_indices[current_covariates_indices != j]) 
+      # we need to keep track of which column index leads to the minimum mallow
+      min_mallow = min(mallow,min_mallow)
+      if (min_mallow == mallow) {
+        next_covariate <- j
+      }
+    }
+    # we need to check whether min_mallow is actually less than current
+    if (min_mallow < current_mallow) {
+      
+      # if it is, then we need to reset current_mallow and remove from current_covariates_indices
+      current_mallow <- min_mallow
+      current_covariates_indices <- current_covariates_indices[current_covariates_indices != next_covariate]
+    } 
+    else {
+
+      # if not, then we stop the backward regression
+      predictors_col_names <- colnames(df)[current_covariates_indices]
+      f <- as.formula(paste(colnames(df)[response_idx],"~",paste(predictors_col_names,collapse="+")))
+      return(lm(f,data=df))
+    }
+  }
+}
+```
+
+```{r}
+backward_stepwise_regression(updatedMileageData,3)
+```
+
+We actually get the same answer here as before. Now we'll use Zheng-Loh.
+
+```{r}
+zheng_loh <- function(df, response_idx) {
+  
+  # first, we need to obtain the full model
+  response_col_name <- colnames(df)[response_idx]
+  predictors_col_names <- colnames(df)[-response_idx]
+  f <- as.formula(paste(response_col_name,"~",paste(predictors_col_names,collapse="+")))
+  full_model <- lm(f,data=df)
+  
+  # we also need the estimated sigma^2 for later
+  est_sigma_squared <- sigma(full_model)^2
+  
+  # now we need the Wald test statistics
+  # first, we get the model summary
+  full_model_summary <- summary(full_model)
+  
+  # compute a vector of the standard errors
+  std_errors <- full_model_summary$coefficients[,"Std. Error"]
+  
+  # compute a vector of the estimates
+  estimates <- full_model_summary$coefficients[,"Estimate"]
+  
+  # compute a vector of the wald statistics. drop the intercept; we don't care about that one
+  wald_statistics <- unname(estimates/std_errors)[-1]
+  
+  # we need to minimize RSS(j) + j \widehat{\sigma}^2 log n.
+  
+  # computing k, the number of covariates
+  k <- ncol(df) - 1
+  
+  # computing n, the sample size
+  n <- nrow(df)
+  
+  # get the order for the wald statistics
+  index_order <- order(abs(wald_statistics), decreasing=TRUE)
+  
+  # set a variable to track the minimum
+  min_zl <- Inf
+  
+  # now we loop through models with the j largest Wald statistics
+  for (j in 1:k) {
+    
+    # create a model involving the covariates that use the j largest wald statistics
+    j_largest_wald_column_indices <- index_order[1:j]
+    f <- as.formula(paste(response_col_name,"~",paste(predictors_col_names[j_largest_wald_column_indices],collapse="+")))
+    temp_model <- lm(f,data=df)
+    
+    # compute the RSS
+    rss <- sum(residuals(temp_model)^2)
+    
+    # compute RSS + j \widehat{\sigma}^2 \log n
+    to_minimize <- rss + j*est_sigma_squared*log(n)
+
+    # set min_zl and track whether j is minimal
+    min_zl = min(min_zl,to_minimize)
+    if (min_zl == to_minimize) {
+      j_hat <- j
+    }
+  }
+
+  # return the final model, using j_hat
+  j_hat_indices <- index_order[1:j_hat]
+  f <- as.formula(paste(response_col_name,"~",paste(predictors_col_names[j_hat_indices],collapse="+")))
+  return(lm(f,data=df))
+}
+```
+
+```{r}
+zheng_loh(updatedMileageData,3)
+```
+
+This actually gives us the same coefficients as the previous part does, too!
+
+Now we'll perform all possible regressions, comparing C_p and BIC.
+
+```{r}
+updatedMileageData
+```
+
+```{r}
+library(gtools)
+```
+
+```{r}
+perform_all_regressions <- function(df, response_idx) {
+  
+  # create variable to store subsets
+  subsets <- list()
+  
+  # get column names
+  response_col_name <- colnames(df)[response_idx]
+  col_names <- colnames(df)
+  
+  # get column indices
+  number_of_columns <- ncol(df)
+  predictors_indices <- c(1:number_of_columns)[-response_idx]
+  
+  # get all subsets of predictors_indices
+  for (i in 1:length(predictors_indices)) {
+    
+    # get combinations of predictors_indices
+    comb_matrix <- combinations(n=length(predictors_indices), r = i, v = predictors_indices, set=TRUE, repeats.allowed=FALSE)
+    comb_split <- apply(comb_matrix, 1, identity, simplify = FALSE)
+    
+    # generate subsets
+    subsets <- c(subsets, comb_split)
+  }
+  
+  # initialize variables to store Mallow and BICs
+  mallows <- c()
+  BICs <- c()
+  
+  # loop through subsets and make models
+  for (i in subsets) {
+    
+    # make formula for model
+    f <- as.formula(paste(response_col_name,"~",paste(col_names[i],collapse="+")))
+    
+    # fit the model
+    model <- lm(f,data=df)
+    
+    # get mallow
+    mallows <- c(mallows, compute_Mallow_Cp(df,response_idx,i))
+    
+    # get BIC
+    ell_s <- as.numeric(logLik(model))
+    n <- nrow(df)
+    BIC <- ell_s - log(n) * 0.5 * (length(i) + 1)
+    BICs <- c(BICs,BIC)
+  }
+  print(mallows)
+  print(BICs)
+}
+```
+
+```{r}
+perform_all_regressions(updatedMileageData, 3)
+```
+
+It looks like the higher the Mallow C_p statistic, the lower the BIC. 
+
+
+
+
+
+

@@ -1,0 +1,126 @@
+---
+title: "13-11"
+author: "Andrew Wu"
+date: "2025-07-26"
+output: html_document
+---
+
+Get the Coronary Risk-Factor Study (CORIS) data from the book website. Use backward stepwise logistic regression based on AIC to select a model. Summarize your results.
+
+```{r}
+url <- "https://www.stat.cmu.edu/~larry/all-of-statistics/=data/coris.dat"
+destfile <- "coris.dat"
+download.file(url,destfile)
+```
+
+```{r}
+raw_data <- readLines(destfile)
+head(raw_data)
+```
+
+We have to clean the file first.
+
+```{r}
+raw_data <- raw_data[-c(2:4)] # remove lines between header and data
+```
+
+Now we write the lines back into another file.
+
+```{r}
+writeLines(raw_data,"cleaned_coris.dat") # create a cleaned_coris.dat file to read data from
+corisData <- read.table("cleaned_coris.dat",header=TRUE,sep=",")
+head(corisData)
+```
+
+We need to run a backward stepwise logistic regression based on AIC to select a model, to predict CHD.
+
+```{r}
+# first we write a function that takes a dataframe and column indices for covariates, and returns the AIC of the logistic regression model
+get_AIC <- function(df, response_idx, covariates) {
+  
+  # get a dataframe with just the columns we care about
+  df_sub <- df[,c(response_idx,covariates)]
+  
+  head(df_sub)
+  
+  # fit a logistic model
+  submodel <- glm(as.formula(paste(colnames(df_sub)[1], " ~ .")), data=df_sub, family=binomial)
+  
+  # get the AIC 
+  R_AIC <- AIC(submodel)
+  our_AIC <- R_AIC/(-2)
+  
+  return(our_AIC)
+}
+```
+
+```{r}
+# the function needs to start with all covariates, remove a covariate to get a larger AIC, and repeat until there's no way to remove another covariate without decreasing the AIC
+# it will return a logistic model with these covariates
+backward_stepwise_regression <- function(df,response_idx) {
+  
+  # total possible number of covariates; subtract one because one column is the response
+  total_columns <- ncol(df)
+  total_possible_covariates <- total_columns - 1
+  
+  # define a list of the covariate indices we're using
+  current_covariates_indices <- c(1:total_columns)
+  current_covariates_indices <- current_covariates_indices[current_covariates_indices != response_idx]
+  
+  # keep track of the AIC statistic value before removing a covariate
+  current_AIC <- get_AIC(df, response_idx, current_covariates_indices)
+  
+  # for each possible removed covariate, we need to compute the AIC, and take the maximum among them
+  # we'll set up a for loop
+  for (i in 1:total_possible_covariates) {
+    
+    # we'll loop through current_covariates_indices
+    # we'll compute the AIC upon removal of each element 
+    max_AIC <- -Inf
+    
+    for (j in current_covariates_indices) {
+      
+      # compute the AIC with current_covariates_indices without j
+      AIC <- get_AIC(df,response_idx,current_covariates_indices[current_covariates_indices != j]) 
+      # we need to keep track of which column index leads to the maximum AIC
+      max_AIC = max(AIC,max_AIC)
+      if (max_AIC == AIC) {
+        next_covariate <- j
+      }
+    }
+    # we need to check whether max_AIC is actually greater than current
+    if (max_AIC > current_AIC) {
+      
+      # if it is, then we need to reset current_AIC and remove from current_covariates_indices
+      current_mallow <- max_AIC
+      current_covariates_indices <- current_covariates_indices[current_covariates_indices != next_covariate]
+    } 
+    else {
+
+      # if not, then we stop the backward regression
+      predictors_col_names <- colnames(df)[current_covariates_indices]
+      f <- as.formula(paste(colnames(df)[response_idx],"~",paste(predictors_col_names,collapse="+")))
+      return(lm(f,data=df))
+    }
+  }
+}
+```
+
+We need a dataframe without the first column, which just gives the row number.
+
+```{r}
+updatedCorisData <- corisData[-1]
+```
+
+Now we'll do the backwards stepwise regression.
+
+```{r}
+final_model <- backward_stepwise_regression(updatedCorisData,10)
+summary(final_model)
+```
+
+So it seems the best predictors for coronary heart disease are tobacco usage, LDL, family history, Type A, and age. 
+
+
+
+
