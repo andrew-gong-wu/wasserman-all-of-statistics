@@ -1,0 +1,211 @@
+---
+title: "14-4_14-5_14-6"
+author: "Andrew Wu"
+date: "2025-07-30"
+output: html_document
+---
+
+Write a function to generate nsim observations from a Multivariate normal with given mean $\mu$ and covariance matrix $\sigma$.
+
+Generate 100 random variables from a $N(\mu, \Sigma)$ distribution where $\mu = \begin{bmatrix} 3 \\ 8 \end{bmatrix}$ and $\Sigma = \begin{bmatrix} 1 & 1 \\ 1 & 2 \end{bmatrix}$. Plot the simulation as a scatterplot. Estimate the mean and covariance matrix $\Sigma$. Find the correlation $\rho$ between $X_1$ and $X_2$. Compare this with the sample correlations from your simulation. Find a $95$ percent confidence interval for $\rho$. Use two methods: the bootstrap and Fisher's method. Compare.
+
+Then repeat this $1000$ times. Compare the coverage of the two confidence intervals for $\rho$.
+
+```{r}
+# we need a matrix square root
+library(expm)
+```
+
+```{r}
+generate_multi_normal <- function(nsim,mu,Sigma) {
+  
+  # get size of the vectors
+  k <- length(mu)
+  
+  # matrix to store observations
+  observations <- matrix(0, nrow = k, ncol = nsim)
+  
+  # run the for loop
+  for (i in 1:nsim) {
+    
+    # generate an N(0,I_k) RV
+    Z <- rnorm(k)
+    
+    # get the random multivariate normal using X = mu + Sigma^{1/2} Z
+    X <- mu + sqrtm(Sigma) %*% Z
+    
+    # store the observation
+    observations[,i] <- X
+  }
+  
+  return(observations)
+}
+```
+
+```{r}
+# set Sigma and mu
+Sigma1 <- matrix(c(1,  1,
+                   1,  2), nrow=2, byrow=TRUE)
+mu <- c(3,8)
+```
+
+```{r}
+set.seed(1)
+n <- 100
+observations <- generate_multi_normal(n,mu,Sigma1)
+
+# for easy reference to the rows
+X_1is <- observations[1,]
+X_2is <- observations[2,]
+```
+
+```{r}
+# create a scatter plot
+plot(X_1is, X_2is, xlab = "X_1is", ylab = "X_2is", main = "Scatterplot", pch = 19)
+```
+
+```{r}
+# estimate the mean
+sample_mean <- c(mean(observations[1,]),mean(observations[2,]))
+sample_mean
+```
+
+```{r}
+# estimate the covariance matrix
+s_11 <- var(X_1is)
+s_22 <- var(X_2is)
+s_12 <- cov(X_1is,X_2is)
+
+Sigma1_hat <- matrix(c(s_11,  s_12,
+                   s_12,  s_22), nrow=2, byrow=TRUE)
+Sigma1_hat
+```
+
+```{r}
+# get the sample correlation
+rho_hat <- cor(X_1is, X_2is)
+rho_hat
+```
+
+To find the true correlation, we begin by noting that the given variance-covariance matrix indicates $\mathbb{V}(X_1) = 1$ and $\mathbb{V}(X_2) = 2$. Therefore $\sigma_1 \sigma_2 = \sqrt{2}$. Next, $\text{Cov}(X_1, X_2) = 1$. Thus the true correlation $\rho$ is $\frac{1}{\sqrt{2}} = 0.707$, which is indeed quite close to $0.712$. 
+
+Now we'll write a function to generate $95 \%$ confidence intervals, both Fisher and bootstrap.
+
+```{r}
+boot_cor_CI <- function(observations) {
+  
+  # set alpha
+  alpha <- 0.05
+  
+  # arbitrary large number to draw B times with replacement
+  B <- 1000
+  
+  # get the number of observations
+  n <- ncol(observations)
+  
+  # create matrix to store the bootstrapped observations and vector for the correlations
+  boot_obs <- matrix(0,nrow=2,ncol=n)
+  boot_correlations <- c()
+  
+  # bootstrap
+  for (i in 1:B) {
+    
+    # draws n indices from 1:n with replacement
+    boot_obs_indices <- sample(n,n,replace=TRUE)
+    
+    # loop through boot_obs_indices
+    for (j in 1:n) {
+      boot_obs[,j] <- observations[,boot_obs_indices[j]]
+    }
+    
+    # get the correlation of boot_obs
+    boot_rho <- cor(boot_obs[1,], boot_obs[2,])
+    
+    # store in boot_correlations
+    boot_correlations[i] <- boot_rho
+  }
+  
+  # percentile interval
+  CI <- quantile(boot_correlations,c(alpha/2,1-alpha/2))
+  return(CI)
+}
+```
+
+```{r}
+fisher_cor_CI <- function(observations) {
+  
+  alpha <- 0.05
+  
+  # for easy reference to the rows and number of observations
+  X_1is <- observations[1,]
+  X_2is <- observations[2,]
+  n <- ncol(observations)
+  
+  # first, get the correlation estimate
+  rho_hat <- cor(X_1is,X_2is)
+  
+  # next, get theta_hat = f(rho_hat), with f(r) = 1/2 (log (1+r) - log(1-r))
+  theta_hat <- 0.5*(log(1+rho_hat)-log(1-rho_hat))
+  
+  # get the approx standard error of theta_hat
+  se_theta <- 1/sqrt(n-3)
+  
+  # get a confidence interval for theta
+  a <- theta_hat - qnorm(1-alpha/2)*se_theta
+  b <- theta_hat + qnorm(1-alpha/2)*se_theta
+  
+  # get confidence interval for rho
+  CI <- c((exp(2*a)-1)/(exp(2*a) + 1), (exp(2*b)-1)/(exp(2*b)+1))
+  return(CI)
+}
+```
+
+```{r}
+boot_cor_CI(observations)
+```
+
+```{r}
+fisher_cor_CI(observations)
+```
+
+These confidence intervals both contain the true value. Now we'll repeat this experiment 1000 times.
+
+```{r}
+N <- 1000
+n <- 100
+
+# initalize vectors. 0 corresponds to the interval not containing true correlation; 1 corresponds to containing true correlation
+successes_boot <- numeric(N)
+successes_fisher <- numeric(N)
+
+# get true correlation
+true_cor <- 1/sqrt(2)
+
+# loop through to generate CIs, and check each time whether the true correlation is in them
+for (i in 1:N) {
+  
+  # generate observations
+  observations <- generate_multi_normal(n,mu,Sigma1)
+  
+  # get CIs
+  boot_CI <- unname(boot_cor_CI(observations))
+  fisher_CI <- fisher_cor_CI(observations)
+  
+  # check if true correlation is in CIs
+  if (true_cor > boot_CI[1] && true_cor < boot_CI[2]) {
+    successes_boot[i] <- 1
+  } 
+  if (true_cor > fisher_CI[1] && true_cor < fisher_CI[2]) {
+    successes_fisher[i] <- 1
+  }
+}
+
+print(mean(successes_boot))
+print(mean(successes_fisher))
+```
+
+The Fisher interval seems to have slightly better coverage.
+
+
+
+

@@ -1,0 +1,58 @@
+---
+title: "14-3"
+author: "Andrew Wu"
+date: "2025-07-30"
+output: html_document
+---
+
+Write a function to generate nsim observations from a Multinomial(n,p) distribution.
+
+```{r}
+generate_multinomial <- function(nsim, n, p) {
+  
+  # first, check that the elements of vector p sum to 1
+  if (sum(p) != 1) {
+    return("p is invalid.")
+  }
+  
+  # get the number of elements of p
+  k <- length(p)
+  
+  # matrix to store the observations
+  observations <- matrix(0, nrow = nsim, ncol = k)
+  
+  # run a loop to generate nsim observations
+  for (i in 1:nsim) {
+    
+    # we'll simulate this by rolling a k-sided die n times
+    # with X = (X_1, ... , X_k), we'll generate each X_j separately
+    # first, we'll check how many times the first side comes up
+    # then the next, and etc.
+    
+    # record the number of tosses we have left
+    tosses_left <- n
+    
+    for (j in 1:k) {
+      
+      # our idea is to generate X_1 as rbinom(1, n, p[1])
+      # so every successful X_1 toss updates tosses_left (left for the rest of the X_js)
+      # then, the probability for X_2 isn't just p[2], because it's conditioned on that roll not being X_1
+      # so it's p[2] over sum(p[2] + ... + p[k])
+      # and so on
+      X_j <- rbinom(1, tosses_left, p[j]/sum(p[j:k]))
+      
+      # update how many tosses we have left
+      tosses_left <- tosses_left - X_j
+      
+      # store our generated X_j
+      observations[i,j] = X_j
+    }
+  }
+  
+  return(observations)
+}
+```
+
+```{r}
+generate_multinomial(10, 100, c(0.2,0.3,0.5))
+```
