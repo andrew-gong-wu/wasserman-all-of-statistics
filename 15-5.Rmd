@@ -1,0 +1,102 @@
+---
+title: "15-5"
+author: "Andrew Wu"
+date: "2025-08-07"
+output: html_document
+---
+
+Analyze the data on the variables Age and Financial Status from https://lib.stat.cmu.edu/DASL/Datafiles/montanadat.html.
+
+```{r}
+url <- "https://lib.stat.cmu.edu/DASL/Datafiles/montanadat.html"
+destfile <- "montanafinancial.dat"
+download.file(url,destfile)
+```
+
+```{r}
+raw_data <- readLines(destfile)
+raw_data
+```
+Need to clean the data. It starts at line 39 and ends at line 249. The separator is the \t character. Also, we care only about age and financial status.
+
+```{r}
+raw_data_removed_rows <- raw_data[c(39,41:249)]
+head(raw_data_removed_rows)
+```
+Let's give the first row the same separators as the rest of the rows.
+
+```{r}
+raw_data_removed_rows[1] <- gsub(" +", "\t", raw_data_removed_rows[1])
+```
+
+Now we can throw this into a table.
+
+```{r}
+writeLines(raw_data_removed_rows,"cleaned_montanafinancial.dat")
+montanaFinancialData <- read.table("cleaned_montanafinancial.dat", header=TRUE, sep="\t")
+head(montanaFinancialData)
+```
+
+We only want "age" and "fin."
+
+```{r}
+montanaAgeFin <- montanaFinancialData[,c(1,6)]
+montanaAgeFin
+```
+
+Here we have two discrete variables. Let's create a table of counts for them. Let $Z$ represent age and $Y$ represent financial status, such that $Z = 1, 2,$ or $3$ and $Y = 1, 2,$ or $3$. Row $i$ is for people whose age is $i$; column $i$ is for people whose financial status is $i$. As usual, let $X_{ij}$ be the element in row i and column j.
+
+Also, before doing that, we'll get rid of any rows with asterisks in them.
+
+```{r}
+# drop rows where the entry is just an asterisk
+# 1 means go through rows (2 means columns)
+# function(r) any(r == "*") means that it goes through rows r and checks if any element in r is *
+bad_rows <- apply(montanaAgeFin, 1, function(r) any(r == "*"))
+montanaAgeFinClean <- montanaAgeFin[!bad_rows, , drop=FALSE]
+
+# create counts table
+montanaCounts <- table(montanaAgeFinClean$AGE, montanaAgeFinClean$FIN)
+montanaCounts
+```
+Let's test the null hypothesis Y and Z are independent versus the alternative hypothesis that Y and Z are associated.
+
+We'll compute both the likelihood ratio statistic and the Pearson chi-squared test statistic.
+
+```{r}
+# get the row and column sums
+X_idots <- rowSums(montanaCounts)
+X_dotis <- colSums(montanaCounts)
+
+# get the total
+X_dots <- sum(montanaCounts)
+
+# initialize LRT_stat
+LRT_stat <- 0
+
+# compute the sum over all rows and columns of 2 \cdot X_{ij} log (X_{ij} X_{..} / (X_{i.}X_{.j}))
+for (i in 1:3) {
+  for (j in 1:3) {
+    X_ij <- montanaCounts[i,j]
+    LRT_stat <- LRT_stat + 2 * X_ij * log(X_ij*X_dots / (X_idots[i] * X_dotis[j]))
+  }
+}
+
+print(LRT_stat)
+```
+
+In this case, the test statistic ought to converge to $\chi_4^2$. We can compute a p-value as follows:
+
+```{r}
+p_value_LRT <- 1 - pchisq(LRT_stat,4)
+p_value_LRT
+```
+
+We can actually check this work using an existing R package.
+
+```{r}
+library(DescTools)
+GTest(montanaCounts)
+```
+
+We can conclude that Age and Financial Status are associated.

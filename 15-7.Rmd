@@ -1,0 +1,149 @@
+---
+title: "15-7"
+author: "Andrew Wu"
+date: "2025-08-08"
+output: html_document
+---
+
+Test whether calcium intake and drop in blood pressure are associated. Use the data in https://lib.stat.cmu.edu/DASL/Datafiles/Calcium.html.
+
+```{r}
+url <- "https://lib.stat.cmu.edu/DASL/Datafiles/Calcium.html"
+destfile <- "Calcium.dat"
+download.file(url,destfile)
+```
+
+```{r}
+raw_data <- readLines(destfile)
+raw_data
+```
+
+First, let's get rid of the lines that don't contain our data.
+
+```{r}
+raw_data_removed_rows <- raw_data[29:50]
+raw_data_removed_rows
+```
+
+Now we throw everything into a table.
+
+```{r}
+writeLines(raw_data_removed_rows,"cleaned_Calcium.dat")
+CalciumBP <- read.table("cleaned_Calcium.dat",header=TRUE,sep="\t")
+CalciumBP
+```
+
+Here we are comparing one continuous variable $Z$ (decrease in BP) with one discrete variable $Y$ (treatment, which is calcium or no calcium.) Let $Y = 1$ represent calcium and $Y = 2$ represent the placebo. As usual, denote by $F_i(z) = \mathbb{P}(Z \le z | Y = i)$ denote the CDF of $Z$ conditional on $Y = i$. We'll test $H_0 : F_1 = F_2$ versus $H_1: \text{ not } H_0$ at level $\alpha = 0.05.$
+
+First, we'll convert Calcium to 1 and Placebo to 2.
+
+```{r}
+CalciumBP$treatmentCode <- ifelse(CalciumBP$Treatment == "Calcium", 1,
+                            ifelse(CalciumBP$Treatment == "Placebo", 2, NA))
+CalciumBP <- CalciumBP[,c(4,5)]
+```
+
+```{r}
+CalciumBP
+```
+
+Let's use the two-sample Kolmogorov-Smirnov test. 
+
+```{r}
+# we'll feed two columns into the function
+kolmogorov_smirnov_2samp <- function(ctsData, discreteData) {
+  
+  # get n1 and n2, the number of observations for which Y_i = 1 and Y_i = 2, respectively
+  n1 <- sum(discreteData == 1)
+  n2 <- sum(discreteData == 2)
+  
+  # test statistic is D
+  D <- -Inf
+  
+  # check |F_1hat(x) - F_2hat(x)| at every value of x in ctsData
+  for (i in ctsData) {
+    
+    # F_1hat is the number of elements Z_j such that Z_j <= i and Y_j = 1, multiplied by 1/n1
+    F_1hat <- (1/n1)*sum(ctsData <= i & discreteData == 1)
+    
+    # similar for F_2hat
+    F_2hat <- (1/n2)*sum(ctsData <= i & discreteData == 2)
+    
+    # we want the maximum value of D across all the elements of ctsData
+    D <- max(D,abs(F_1hat - F_2hat))
+  }
+  
+  return(D)
+}
+```
+
+```{r}
+ks_test_stat <- kolmogorov_smirnov_2samp(CalciumBP$Decrease,CalciumBP$treatmentCode)
+
+# we want to reject the null hypothesis when sqrt((n_1n_2)/(n_1+n_2)) * D > H^{-1}(1 - alpha)
+alpha <- 0.05
+
+n1 <- sum(CalciumBP$treatmentCode == 1)
+n2 <- sum(CalciumBP$treatmentCode == 2)
+ks_test_stat * sqrt(n1*n2/(n1 + n2))
+```
+
+```{r}
+# we'll approximate this function by throwing a large number in for infinity
+ks_H_function <- function(t) {
+  
+  summationResult <- 0
+  
+  for (j in 1:5000) {
+    summationResult <- summationResult +  (-1)^(j-1) * exp(-2 * j^2 * t^2)
+  }
+  
+  return(1 - 2 * summationResult)
+}
+```
+
+```{r}
+# define a grid of t‐values
+t_vals <- seq(0, 2, length.out = 400)
+
+# compute H(t) at each grid point
+H_vals <- sapply(t_vals, ks_H_function)
+
+plot(
+  t_vals, H_vals, 
+  type = "l",                    # line plot
+  lwd  = 2,                      # line width
+  xlab = expression(t),          # axis labels
+  ylab = expression(H(t)), 
+  main = "KS CDF H(t)"
+)
+abline(h = 0:1, col = "gray80", lty = 2)  # horizontal guides at 0 and 1
+```
+
+It is clear that 0.93 is nowhere near $H^{-1}(0.95)$, so we cannot conclude that blood pressure decrease and calcium treatment are associated. With the numbers, we have $0.65 < 0.95$. 
+
+```{r}
+ks_H_function(ks_test_stat * sqrt(n1*n2/(n1 + n2)))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

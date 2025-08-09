@@ -1,0 +1,250 @@
+<TITLE>Montana Outlook Poll</TITLE>
+
+
+<hr size=2><center><table border=1 cellpadding=0 cellspacing=0><tr><td align=center><table border=1 cellpadding=1 cellspacing=0><tr><td><A HREF="../DataArchive.html"><IMG SRC="../InlineImages/mainmenu.gif" alt="Go to Main Menu"></a></td></tr></table></td><td align=center><table border=1 cellpadding=1 cellspacing=0><tr><td><A HREF="/cgi-bin/dasl.cgi"><IMG SRC="../InlineImages/powersearchsmall.gif" alt="Go to Power Search"></a></td></tr></table></td><td align=center><table border=1 cellpadding=1 cellspacing=0><tr><td><A HREF="../allsubjects.html"><IMG SRC="../InlineImages/allsubjects.gif" alt="Go to Datafile Subjects"></a></td></tr></table></td></tr></table></center><hr size=2>
+<B><DT>Datafile Name:</B>   Montanac Outlook Poll
+<B><DT>Datafile Subjects:</B>   <dsubjects>
+<A HREF="/cgi-bin/dasl.cgi?query=Economics&submit=Search&metaname=dsubjects&sort=swishrank">Economics</a>
+,
+<A HREF="/cgi-bin/dasl.cgi?query=Finance&submit=Search&metaname=dsubjects&sort=swishrank">Finance</a>
+,
+<A HREF="/cgi-bin/dasl.cgi?query=Consumer&submit=Search&metaname=dsubjects&sort=swishrank">Consumer</a>
+
+</dsubjects>
+<B><DT>Story Names:</B>   
+<A HREF="../Stories/montana.html">Montana Outlook Poll</A>
+
+<B><DT>Reference:</B>   Bureau of Business and Economic Research, University of Montana, May 1992
+<B><DT>Authorization:</B>   free use
+<B><DT>Description:</B>   The Montana poll asked a random sample of Montana residents whether their
+personal financial status was the worse, the same, or better than a year ago, and
+whether they thought the state economic outlook was better over the next year.
+This file contains these items and accompanying demographics about the 
+respondents. The file contains results for every other person included in the
+poll.
+
+<B><DT>Number of cases:</B>   209
+<B><DT>Variable Names:</B>
+<OL>
+ <li>AGE = 1 under 35, 2  35-54, 3  55 and over
+<li> SEX = 0  male, 1  female
+<li> INC =  yearly income:  1 under $20K,  2  20-35$K,  3  over $35K
+ <li>POL = 1 Democrat,  2 Independent,  3 Republican
+ <li>AREA = 1 Western,  2 Northeastern,  3 Southeastern  Montana
+<li> FIN = Financial status 1 worse,  2 same,  3 better  than a year ago
+ <li>STAT = State economic outlook  1 better,  2 not better  than a year ago
+</OL>
+<B><DT>The Data:</B>
+<PRE>
+AGE  SEX      INC      POL  AREA       FIN    STAT
+
+3	0	2	2	1	2	1
+2	0	3	3	1	3	1
+1	0	2	*	1	2	1
+3	1	2	1	1	1	0
+3	1	3	3	3	2	*
+1	0	2	1	3	3	*
+3	1	1	3	3	1	1
+1	0	1	3	2	1	0
+3	1	*	3	3	2	0
+1	0	*	1	1	2	1
+2	1	2	3	1	2	*
+3	1	1	3	2	2	0
+2	0	2	1	3	3	0
+3	0	*	3	2	2	0
+3	0	3	3	3	3	1
+3	0	3	1	3	1	1
+1	1	2	1	3	3	*
+3	1	2	1	3	2	1
+3	1	2	3	3	1	0
+2	0	3	3	3	3	1
+1	1	3	1	1	3	0
+3	0	1	2	1	2	0
+1	1	2	3	1	3	*
+3	0	2	2	1	2	1
+2	0	3	1	1	3	0
+1	0	1	3	1	1	1
+3	0	2	1	1	3	0
+3	1	*	1	3	2	0
+2	1	2	2	3	2	0
+2	1	2	3	3	1	0
+2	0	2	3	1	2	1
+1	0	2	*	1	3	0
+1	1	2	3	3	3	1
+2	1	3	1	3	2	0
+1	0	1	1	3	2	1
+3	0	2	1	3	2	*
+2	0	3	3	3	3	0
+3	0	1	3	3	3	0
+1	0	1	3	3	1	0
+1	0	1	1	1	1	1
+3	1	3	1	2	1	0
+2	1	2	1	1	1	0
+1	0	2	3	1	2	1
+1	1	3	1	1	2	0
+1	1	3	3	1	3	1
+2	0	3	2	1	3	1
+1	1	2	3	2	3	0
+2	0	3	1	1	1	0
+1	1	*	1	1	3	1
+1	1	2	1	3	3	*
+2	1	*	3	3	3	*
+1	1	2	2	1	1	0
+2	1	1	1	1	1	0
+3	1	*	1	1	2	1
+1	0	3	1	1	1	0
+2	1	2	1	1	3	1
+1	0	3	2	1	1	1
+3	0	2	1	2	1	0
+3	0	2	2	2	1	0
+1	1	1	1	1	1	0
+2	0	3	2	2	2	0
+3	0	2	1	3	2	0
+3	1	1	1	3	2	1
+3	1	1	1	3	1	0
+3	1	*	2	3	2	*
+3	1	1	3	3	3	*
+1	1	3	1	1	3	1
+2	0	3	3	2	3	0
+3	1	2	3	3	2	1
+2	0	3	3	3	1	0
+3	1	2	2	2	2	0
+3	1	2	1	1	3	1
+3	0	2	3	3	3	1
+2	0	3	2	2	1	0
+3	0	3	3	2	2	0
+2	1	3	3	2	3	0
+1	0	1	1	2	1	0
+3	1	*	*	1	1	0
+1	1	1	*	1	1	0
+2	1	2	3	1	3	0
+2	1	3	1	1	2	0
+3	0	3	3	2	1	0
+3	1	1	2	3	2	0
+3	1	*	2	1	2	0
+1	0	2	3	3	2	*
+1	1	2	1	2	1	0
+1	1	*	*	1	2	*
+2	1	3	1	1	2	0
+2	0	3	1	3	2	1
+*	1	1	1	1	1	0
+1	1	1	3	2	3	0
+2	0	3	1	2	1	0
+2	1	3	1	1	2	0
+2	0	2	2	3	2	0
+2	0	*	2	3	1	0
+3	1	1	1	1	2	0
+2	0	2	2	3	2	0
+2	0	1	3	2	2	*
+2	0	2	2	2	2	0
+2	1	2	3	2	3	0
+3	0	3	1	3	2	0
+1	1	2	1	1	1	1
+3	0	2	1	1	1	0
+1	1	2	3	3	1	0
+3	1	1	1	1	2	*
+1	1	2	3	3	3	1
+2	1	2	2	3	1	0
+1	0	2	1	2	1	1
+3	1	2	2	2	2	0
+3	1	2	1	1	1	0
+3	0	2	2	3	1	1
+3	1	3	1	2	2	0
+1	0	1	3	2	3	1
+3	0	2	2	2	1	0
+3	1	2	1	3	3	0
+1	1	1	*	3	1	0
+2	0	3	1	3	1	1
+3	0	2	3	1	3	1
+3	0	2	2	3	3	1
+1	1	2	3	2	3	1
+3	0	3	1	3	2	0
+3	1	1	1	2	1	0
+1	1	3	1	1	3	*
+1	1	2	1	2	3	1
+3	1	2	1	3	2	*
+1	1	1	3	3	3	1
+3	1	*	1	1	1	*
+2	1	2	1	2	3	*
+3	0	2	3	3	2	1
+3	1	*	3	3	2	*
+1	1	2	1	3	1	0
+2	0	3	1	1	1	0
+3	0	2	1	2	2	0
+1	0	3	3	3	3	0
+2	0	2	2	1	2	*
+2	0	3	3	2	3	1
+1	0	1	3	1	3	1
+2	0	3	3	1	2	*
+2	0	3	1	3	2	*
+2	0	3	3	3	3	1
+2	0	2	3	1	3	1
+1	1	3	1	2	3	1
+2	0	2	1	1	1	0
+1	0	1	1	3	3	1
+2	0	3	3	3	2	1
+3	1	1	1	1	2	0
+3	0	2	3	1	1	0
+2	0	2	3	1	1	1
+3	0	2	3	3	3	0
+2	0	3	3	2	2	1
+1	1	*	1	1	3	*
+1	1	2	2	1	1	0
+2	1	1	1	1	3	0
+2	1	1	1	3	1	0
+2	1	1	2	2	2	0
+2	0	2	2	2	1	0
+1	1	3	3	2	1	0
+2	0	3	3	3	3	*
+3	0	3	1	1	2	0
+3	1	2	3	2	1	1
+1	0	1	1	3	2	1
+2	1	3	2	3	3	0
+1	0	2	2	1	2	0
+1	0	3	3	2	2	0
+3	0	2	1	3	2	0
+1	1	3	3	2	3	0
+2	0	3	2	3	2	0
+3	1	2	2	2	3	0
+3	1	1	3	2	1	0
+1	1	2	2	1	2	0
+1	1	2	3	2	3	*
+1	1	1	2	3	2	1
+2	1	1	1	2	1	0
+1	0	2	2	2	2	0
+1	0	3	1	1	3	0
+2	0	*	2	3	2	0
+3	0	*	1	3	2	1
+2	0	2	1	2	3	0
+1	0	2	2	1	1	0
+1	0	3	3	2	2	1
+2	0	3	3	2	3	0
+2	0	3	1	3	3	0
+1	1	1	1	3	3	1
+1	1	2	3	3	3	0
+3	0	3	2	3	1	0
+1	0	1	3	1	3	0
+2	1	3	*	2	3	0
+2	0	1	2	3	2	1
+3	0	2	3	2	2	0
+2	0	1	1	1	1	0
+1	1	1	1	1	2	0
+3	0	1	1	2	1	1
+3	1	*	3	2	2	*
+1	1	1	2	2	3	0
+1	1	2	1	3	3	1
+1	0	2	3	2	3	0
+1	1	1	3	1	1	0
+2	0	2	3	3	3	0
+1	0	3	3	2	2	1
+1	1	1	1	1	1	0
+2	0	2	1	1	3	1
+3	0	2	3	1	2	0
+2	1	*	1	3	3	*
+1	1	1	2	3	3	*
+1	0	3	3	2	*	1
+1	1	2	3	3	3	1
+3	1	1	3	2	2	0
+3	0	3	3	3	1	1
+2	0	3	3	2	2	0
+</PRE>

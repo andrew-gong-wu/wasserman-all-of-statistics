@@ -1,0 +1,52 @@
+<TITLE>Calcium Datafile</TITLE>
+
+
+<hr size=2><center><table border=1 cellpadding=0 cellspacing=0><tr><td align=center><table border=1 cellpadding=1 cellspacing=0><tr><td><A HREF="../DataArchive.html"><IMG SRC="../InlineImages/mainmenu.gif" alt="Go to Main Menu"></a></td></tr></table></td><td align=center><table border=1 cellpadding=1 cellspacing=0><tr><td><A HREF="/cgi-bin/dasl.cgi"><IMG SRC="../InlineImages/powersearchsmall.gif" alt="Go to Power Search"></a></td></tr></table></td><td align=center><table border=1 cellpadding=1 cellspacing=0><tr><td><A HREF="../allsubjects.html"><IMG SRC="../InlineImages/allsubjects.gif" alt="Go to Datafile Subjects"></a></td></tr></table></td></tr></table></center><hr size=2>
+<B><DT>Datafile Name:</B>   Calcium
+<B><DT>Datafile Subjects:</B>   <dsubjects>
+<A HREF="/cgi-bin/dasl.cgi?query=Health&submit=Search&metaname=dsubjects&sort=swishrank">Health</A>
+, 
+
+<A HREF="/cgi-bin/dasl.cgi?query=Medical&submit=Search&metaname=dsubjects&sort=swishrank">Medical</A>
+
+</dsubjects>
+<B><DT>Story Names:</B>   
+<A HREF="../Stories/CalciumandBloodPressure.html">Calcium and Blood Pressure</A>
+
+<B><DT>Reference:</B>   Moore, David S., and George P. McCabe (1989).  <I>Introduction to the Practice of Statistics</I>.   Original source:  Lyle, Roseann M., et al., "Blood pressure and metabolic effects of calcium supplementation in normotensive white and black men," <I>JAMA</I>, 257(1987), pp. 1772-1776,
+<B><DT>Authorization:</B>   contact authors
+<B><DT>Description:</B>   Results of a randomized comparative experiment to investigate the effect of calcium on blood pressure in African-American men.  A treatment group of 10 men received a calcium supplement for 12 weeks, and a control group of 11 men received a placebo during the same period.  All subjects had their blood pressure tested before and after the 12-week period.
+<B><DT>Number of cases:</B>   21
+<B><DT>Variable Names:</B>
+<OL>
+<LI>Treatment:   Whether subject received calcium or placebo
+<LI>Begin:   seated systolic blood pressure before treatment
+<LI>End:   seated systolic blood pressure after treatement
+<LI>Decrease:   Decrease in blood pressure (Begin - End)
+</OL>
+<B><DT>The Data:</B>
+<PRE>
+Treatment	Begin	End	Decrease
+Calcium	107	100	7
+Calcium	110	114	-4
+Calcium	123	105	18
+Calcium	129	112	17
+Calcium	112	115	-3
+Calcium	111	116	-5
+Calcium	107	106	1
+Calcium	112	102	10
+Calcium	136	125	11
+Calcium	102	104	-2
+Placebo	123	124	-1
+Placebo	109	97	12
+Placebo	112	113	-1
+Placebo	102	105	-3
+Placebo	98	95	3
+Placebo	114	119	-5
+Placebo	119	114	5
+Placebo	112	114	2
+Placebo	110	121	-11
+Placebo	117	118	-1
+Placebo	130	133	-3
+
+</PRE>
